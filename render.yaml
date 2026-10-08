@@ -1,0 +1,39 @@
+# Publicação no Render: New › Blueprint › repositório Delive.
+# Campos com "sync: false" são secretos: o Render pede para você digitar na hora.
+services:
+  - type: web
+    name: trafgfood
+    runtime: docker
+    plan: starter
+    healthCheckPath: /manifest.webmanifest
+    disk:
+      name: dados
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: APP_USER_NAME
+        value: Edson Jr
+      - key: APP_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CLAUDE_MODEL
+        value: claude-opus-5-5
+      - key: CLAUDE_EFFORT
+        value: medium
+      - key: GOOGLE_ADS_CLIENT_ID
+        value: 254869003126-06bfnsak41fr0f7483vd9k61cc7ajc2i.apps.googleusercontent.com
+      - key: GOOGLE_ADS_LOGIN_CUSTOMER_ID
+        value: "6603441176"
+      - key: GOOGLE_ADS_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_ADS_REFRESH_TOKEN
+        sync: false
+      - key: GOOGLE_ADS_DEVELOPER_TOKEN
+        sync: false
+      - key: META_ACCESS_TOKEN
+        sync: false
