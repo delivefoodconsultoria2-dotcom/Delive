@@ -1,0 +1,14 @@
+{
+  "name": "TrafgFood",
+  "short_name": "TrafgFood",
+  "description": "Tráfego pago Meta e Google para restaurantes, com gestor de tráfego IA.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A120F",
+  "theme_color": "#0A120F",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

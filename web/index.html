@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A120F">
+<title>TrafgFood</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,600;0,700;1,800;1,900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html,body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+
+/* Layout: DeliveFood shell. Dark green sidebar on desktop, drawer + bottom tabs on phone; content column widens beside the sidebar. Single dark theme by choice, matching the DeliveFood Relatórios system. */
+:root{
+  --bg:#0A120F; --side:#0D1814; --surface:#12201B; --sunk:#192A24; --line:#21342D;
+  --fg:#E6EFEA; --muted:#8DA198; --accent:#1DB46A; --accent-fg:#04110A; --accent-soft:#143524;
+  --meta:#93A5FF; --meta-soft:#1D2548; --google:#F2B04A; --google-soft:#382A11;
+  --good:#4ADE80; --good-soft:#123522; --warn:#F2B04A; --warn-soft:#382A11; --bad:#FF8A80; --bad-soft:#3B1C1B;
+  --shadow:0 10px 30px rgba(0,0,0,.55);
+  --f-display:"Archivo","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:0 96px}
+.num{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:12px;padding-block:14px 10px}
+.brand{font-weight:700;font-size:19px;letter-spacing:-.01em;line-height:1.1;min-width:0}
+.brand small{display:block;font:500 11px/1.4 var(--f-body);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.top .sp{flex:1}
+.mock{border:1px solid var(--warn-soft);font:600 11px/1 var(--f-body);letter-spacing:.05em;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:6px 10px;white-space:nowrap}
+
+.filters{display:flex;gap:8px;overflow-x:auto;padding-block:4px 12px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:500;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+h2{font-family:var(--f-display);font-weight:600;font-size:17px;margin:22px 0 10px;text-wrap:balance}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--surface);border-radius:14px;padding:12px 14px;min-width:0}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi[data-help]{cursor:pointer}
+.kpi .v{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:21px;font-weight:500;margin-top:2px}
+.kpi .d{font-size:12px;margin-top:2px}
+.up{color:var(--good)} .down{color:var(--bad)}
+
+.chartcard{background:var(--surface);border-radius:14px;padding:14px;margin-top:10px}
+.chartcard .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--muted)}
+.legend{display:flex;gap:12px;font-size:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+svg text{fill:var(--muted);font:11px var(--f-data)}
+.chartcard svg{display:block;max-height:230px;margin-inline:auto}
+
+.alerts{display:flex;flex-direction:column;gap:8px}
+.alert{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border-radius:12px;padding:11px 12px;border-left:4px solid var(--warn)}
+.alert.bad{border-left-color:var(--bad)} .alert.good{border-left-color:var(--good)}
+.alert p{margin:0;font-size:14px;min-width:0}
+.alert button{margin-left:auto;flex:none}
+
+.list{display:flex;flex-direction:column;gap:8px}
+.camp{display:grid;grid-template-columns:1fr auto;gap:4px 10px;background:var(--surface);border:0;border-radius:14px;padding:12px 14px;text-align:left;width:100%}
+.camp .n{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.camp .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.camp .stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.camp .stats div{min-width:0}
+.camp .stats span{display:block;font-size:11px;color:var(--muted)}
+.camp .stats b{font:500 14px var(--f-data);font-variant-numeric:tabular-nums}
+.tag{font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px;letter-spacing:.02em}
+.tag.meta{background:var(--meta-soft);color:var(--meta)} .tag.google{background:var(--google-soft);color:var(--google)}
+.st{font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap;align-self:start}
+.st.ativa{background:var(--good-soft);color:var(--good)} .st.pausada{background:var(--sunk);color:var(--muted)} .st.analise{background:var(--warn-soft);color:var(--warn)}
+
+.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:600;background:var(--sunk);color:var(--fg)}
+.btn.pri{background:var(--accent);color:var(--accent-fg)}
+.btn.dng{background:var(--bad-soft);color:var(--bad)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+.clients{display:grid;grid-template-columns:1fr;gap:8px}
+.client{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:14px;padding:12px 14px}
+.av{flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font:700 15px var(--f-display);color:#fff}
+.client .info{min-width:0;flex:1}
+.client .info b{display:block}
+.client .info span{font-size:12px;color:var(--muted)}
+.client .r{text-align:right;font-size:12px;color:var(--muted)}
+.client .r b{display:block;font:500 15px var(--f-data);color:var(--fg)}
+
+.conn{background:var(--surface);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.conn ol{margin:4px 0 0;padding-left:20px;font-size:14px;color:var(--muted)}
+.conn .h{display:flex;align-items:center;gap:8px;font-weight:600}
+
+/* copilot */
+.chat{display:flex;flex-direction:column;gap:10px;padding-bottom:140px}
+.msg{max-width:88%;padding:10px 13px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--accent-fg);border-bottom-right-radius:5px}
+.msg.a{align-self:flex-start;background:var(--surface);border-bottom-left-radius:5px}
+.msg.sys{align-self:center;background:transparent;color:var(--muted);font-size:13px;text-align:center}
+.suggest{display:flex;flex-wrap:wrap;gap:6px}
+.composer{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:6;background:var(--bg);border-top:1px solid var(--line)}
+.composer .in{max-width:560px;margin:0 auto;padding:10px 16px;display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;min-width:0;resize:none;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 12px;max-height:120px}
+.icbtn{flex:none;width:44px;height:44px;border-radius:13px;border:0;display:grid;place-items:center;background:var(--sunk);color:var(--fg)}
+.icbtn.pri{background:var(--accent);color:var(--accent-fg)}
+.icbtn.on{background:var(--bad);color:#fff}
+.icbtn svg{width:20px;height:20px}
+.voicebar{max-width:560px;margin:0 auto;padding:0 16px 6px;display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted)}
+.voicebar label{display:flex;gap:6px;align-items:center}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:7;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{border:0;background:none;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:500;color:var(--muted)}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--accent)}
+
+/* sheet */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(10,12,20,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:88%;overflow:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.sheet h3{font-family:var(--f-display);font-size:19px;margin:0;text-wrap:balance}
+.sheet .sub{color:var(--muted);font-size:13px;margin-top:-6px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.03em}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:10px 12px;width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.money{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:14px}
+.money b{font-family:var(--f-data)}
+.diff{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.diff dt{color:var(--muted)} .diff dd{margin:0;font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:calc(100% - 32px)}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+
+/* DeliveFood shell */
+.side{position:fixed;top:0;bottom:0;left:0;width:264px;z-index:40;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;padding:calc(18px + env(safe-area-inset-top,0px)) 12px calc(14px + env(safe-area-inset-bottom,0px));overflow-y:auto;transform:translateX(-100%);transition:transform .2s ease}
+.side.open{transform:none;box-shadow:var(--shadow)}
+.drawerScrim{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.5)}
+.logo{display:flex;align-items:center;gap:10px;padding:0 6px 14px}
+.logo img{width:48px;height:43px;flex:none}
+.logo b{display:block;font:italic 900 23px/1 var(--f-display);letter-spacing:-.02em;color:var(--fg)}
+.logo b span{color:var(--accent)}
+.logo small{display:block;font:600 10px/1.6 var(--f-body);letter-spacing:.28em;color:var(--muted);margin-top:3px}
+.grp{font:600 11px/1 var(--f-body);letter-spacing:.08em;color:var(--muted);padding:14px 10px 6px;text-transform:uppercase}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--accent)}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.snav{display:flex;flex-direction:column;gap:2px}
+.snav button{display:flex;align-items:center;gap:11px;border:0;background:none;color:var(--fg);text-align:left;padding:8px 10px;border-radius:9px;font-size:14px;opacity:.88}
+.snav button:hover{background:var(--sunk);opacity:1}
+.snav button svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.snav button[aria-current="page"]{background:var(--accent-soft);opacity:1;font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+.snav button[aria-current="page"] svg{stroke:var(--accent)}
+.side .sp{flex:1;min-height:12px}
+.ucard{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 10px}
+.ucard .av{width:32px;height:32px;font-size:12px;border-radius:50%}
+.ucard b{display:block;font-size:14px}.ucard small{color:var(--muted);font-size:12px}
+.ucard.ia{gap:8px}.pill{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 10px;font-weight:600;font-size:13px}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.side .foot{font-size:11px;color:var(--muted);padding:6px 4px 0}
+.icbtn.menu{background:var(--surface)}
+.brand{font-family:var(--f-display)}
+@media (min-width:900px){
+  .side{transform:none}
+  .drawerScrim,.icbtn.menu,nav.tabs{display:none!important}
+  .app{max-width:none;margin:0 0 0 264px;padding-inline:32px;padding-block:0 40px}
+  .app>*{max-width:1080px}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .list{display:grid;grid-template-columns:1fr 1fr}
+  .clients{grid-template-columns:1fr 1fr}
+  .composer{left:264px;bottom:0}
+  .chat{padding-bottom:120px}
+  .scrim{left:264px}
+  .toast{bottom:40px;left:calc(50% + 132px)}
+}
+@media (max-width:480px){.brand{font-size:17px}.mock{font-size:10px;padding:5px 8px}.top .icbtn{width:40px;height:40px}}
+</style>
+</head>
+<body>
+
+
+<aside class="side" id="side" aria-label="Menu">
+  <div class="logo">
+    <img src="/icons/logo.png" alt="" width="48" height="43">
+    <div><b>Trafg<span>Food</span></b><small>TRÁFEGO PAGO</small></div>
+  </div>
+  <div class="grp"><span class="live"><i></i>Meta + Google</span></div>
+  <nav class="snav" id="snav">
+    <button data-tab="painel"><svg viewBox="0 0 24 24"><path d="M4 19V10M10 19V5M16 19v-6M22 19H2"/></svg>Painel de resultados</button>
+    <button data-tab="campanhas"><svg viewBox="0 0 24 24"><path d="M3 11l15-6v14L3 13zM7 13v5"/></svg>Campanhas</button>
+    <button data-tab="copiloto"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3"/></svg>Gestor de tráfego IA</button>
+    <button data-tab="clientes"><svg viewBox="0 0 24 24"><path d="M3 10h18l-2-5H5zM5 10v9h14v-9M9 19v-5h6v5"/></svg>Lojas e contas</button>
+  </nav>
+  <div class="grp">AÇÕES RÁPIDAS</div>
+  <nav class="snav">
+    <button data-act="nova"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nova campanha</button>
+    <button data-ask="Faz um diagnóstico da semana e me diz o que fazer hoje"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Diagnóstico da semana</button>
+    <button data-act="relatorio"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>Relatório para o cliente</button>
+  </nav>
+  <div class="sp"></div>
+  <div class="ucard"><div class="av" id="uIni" style="background:var(--accent);color:var(--accent-fg)">G</div><div><b id="uName">Gestor</b><small>Master</small></div><button class="btn sm" id="logout" style="margin-left:auto" hidden>Sair</button></div>
+  <div class="ucard ia"><small>IA</small><span class="pill"><i></i>Claude</span></div>
+  <div class="foot">TrafgFood by Delivefood</div>
+</aside>
+<div class="drawerScrim" id="drawerScrim" hidden></div>
+
+<div class="app">
+  <header class="top">
+    <button class="icbtn menu" id="menuBtn" aria-label="Abrir menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <div class="brand"><span id="pageTitle">Painel</span><small id="ctx">Todos os clientes</small></div>
+    <div class="sp"></div>
+    <button class="icbtn" id="refreshBtn" aria-label="Atualizar números" title="Atualizar números"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button><span class="mock" id="mockBadge" title="Plataforma sem conta conectada" hidden>Dados de exemplo</span>
+  </header>
+  <div class="filters" id="filters" role="toolbar" aria-label="Filtrar por cliente"></div>
+  <main id="view"></main>
+</div>
+
+<div class="composer" id="composer" hidden>
+  <div class="voicebar">
+    <label><input type="checkbox" id="speakToggle"> Responder em voz</label>
+    <span id="voiceHint"></span>
+  </div>
+  <form class="in" id="chatForm">
+    <button type="button" class="icbtn" id="micBtn" aria-label="Falar comando">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+    </button>
+    <textarea id="chatInput" rows="1" placeholder="Ex.: pausa as campanhas da Sushi Kaze"></textarea>
+    <button type="submit" class="icbtn pri" id="sendBtn" aria-label="Enviar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </form>
+</div>
+
+<nav class="tabs"><div class="in" id="tabs">
+  <button data-tab="painel" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V10M10 19V5M16 19v-6M22 19H2"/></svg>Painel</button>
+  <button data-tab="campanhas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11l15-6v14L3 13zM7 13v5"/></svg>Campanhas</button>
+  <button data-tab="copiloto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><circle cx="12" cy="12" r="3"/></svg>IA</button>
+  <button data-tab="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10h18l-2-5H5zM5 10v9h14v-9M9 19v-5h6v5"/></svg>Clientes</button>
+</div></nav>
+
+<div id="sheetRoot"></div>
+
+
+<div class="scrim" id="login" hidden><form class="sheet" id="loginForm" style="max-width:400px;border-radius:20px;margin:auto">
+  <img src="/icons/logo.png" alt="" width="56" height="50">
+  <h3>Entrar no TrafgFood</h3>
+  <div class="field"><label for="senha">Senha</label><input id="senha" type="password" autocomplete="current-password" required></div>
+  <div class="sub" id="loginErr"></div>
+  <button class="btn pri" type="submit">Entrar</button>
+</form></div>
+<script src="/app.js"></script>
+</body>
+</html>
