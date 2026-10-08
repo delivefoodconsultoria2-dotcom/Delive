@@ -22,5 +22,6 @@ npx postject "$OUT/TrafgFood.exe" NODE_SEA_BLOB build/sea-prep.blob --sentinel-f
 cp -r web "$OUT/web"
 cp -r server/knowledge "$OUT/server/knowledge"
 sed 's/$/\r/' desktop/LEIA-ME.txt > "$OUT/LEIA-ME.txt"
+cp desktop/win/* desktop/trafgfood.ico "$OUT/"
 (cd dist && zip -qr TrafgFood-Windows.zip TrafgFood)
 echo "Pronto: dist/TrafgFood-Windows.zip"

@@ -10,6 +10,14 @@ TrafgFood no seu computador (Windows)
 4. O TrafgFood abre no navegador em http://localhost:3000.
    Deixe a janela preta aberta enquanto usa. Para fechar o app, feche essa janela.
 
+Deixar sempre ligado:
+- Dê dois cliques em "Ligar com o Windows.bat" (uma vez só). O TrafgFood passa a ligar sozinho,
+  escondido, quando o computador ligar, e aparece um atalho TrafgFood na área de trabalho.
+- Para abrir: atalho TrafgFood na área de trabalho (ou "Abrir TrafgFood.vbs" nesta pasta).
+- Para desligar agora: "Desligar TrafgFood.bat".
+- Para não ligar mais com o Windows: "Parar de ligar com o Windows.bat".
+- Se algo der errado, veja o arquivo trafgfood-log.txt.
+
 Onde ficam as coisas:
 - configuracao.txt: chaves e senha. Fica só neste computador. Não mande para ninguém.
 - pasta dados: lojas, histórico e auditoria.
