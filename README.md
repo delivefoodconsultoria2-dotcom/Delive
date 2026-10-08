@@ -13,6 +13,8 @@ Painel por loja, campanhas, gestor de tráfego IA por voz e texto, e confirmaç�
 
 ## Rodar no computador
 
+Windows sem instalar nada: gere o pacote com `npm run build:exe` (sai em `dist/TrafgFood-Windows.zip`), extraia e dê dois cliques em `TrafgFood.exe`. As chaves ficam em `configuracao.txt` ao lado do .exe e os dados na pasta `dados`. O app fica acessível só no próprio computador.
+
 Jeito fácil: instale o Node.js (https://nodejs.org), baixe o projeto e dê dois cliques em `iniciar-windows.bat` (Windows) ou `iniciar-mac.command` (Mac). Na primeira vez ele abre o arquivo `.env` para você colocar a `ANTHROPIC_API_KEY`; depois abre o TrafgFood no navegador em http://localhost:3000.
 
 Pelo terminal (Node.js 20 ou mais novo):

@@ -1,19 +1,19 @@
 import express from "express";
 import crypto from "node:crypto";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { store } from "./store.js";
 import { seedIfEmpty } from "./providers/mock.js";
 import { state, propose, confirm, reject, invalidate } from "./actions.js";
 import { ask } from "./copilot.js";
+import { ROOT } from "./paths.js";
 
 const PORT = Number(process.env.PORT || 3000);
 const PASSWORD = process.env.APP_PASSWORD || "";
 const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
 const USER = process.env.APP_USER_NAME || "Gestor";
-const WEB = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "web");
+const WEB = path.join(ROOT, "web");
 
-if (!PASSWORD) console.warn("Aviso: APP_PASSWORD vazio. Qualquer pessoa com o endereço consegue entrar.");
+if (!PASSWORD && process.env.HOST !== "127.0.0.1") console.warn("Aviso: APP_PASSWORD vazio. Qualquer pessoa com o endereço consegue entrar.");
 
 seedIfEmpty();
 const app = express();
@@ -69,7 +69,13 @@ app.post("/api/copilot", wrap(async (req, res) => {
   const history = Array.isArray(req.body?.history) ? req.body.history : [];
   if (!history.length) throw new Error("Mensagem vazia.");
   if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) throw new Error("O gestor IA precisa da chave ANTHROPIC_API_KEY no servidor.");
-  res.json(await ask(history));
+  try {
+    res.json(await ask(history));
+  } catch (e) {
+    if (e.status === 401) throw new Error("A chave da Claude API (ANTHROPIC_API_KEY) está errada ou foi apagada. Gere outra em console.anthropic.com.");
+    if (e.status === 402 || /credit|billing/i.test(e.message)) throw new Error("A conta da Claude API está sem créditos. Adicione em console.anthropic.com > Billing.");
+    throw e;
+  }
 }));
 
 // Cadastro de lojas e das contas de anúncio de cada uma.
@@ -116,4 +122,8 @@ app.delete("/api/clients/:id", wrap(async (req, res) => {
 app.use(express.static(WEB, { extensions: ["html"] }));
 app.get("*", (_req, res) => res.sendFile(path.join(WEB, "index.html")));
 
-app.listen(PORT, () => console.log(`TrafgFood rodando em http://localhost:${PORT}`));
+// HOST=127.0.0.1 deixa o app visível só neste computador (usado pelo TrafgFood.exe).
+app.listen(PORT, process.env.HOST || undefined, () => {
+  console.log(`TrafgFood rodando em http://localhost:${PORT}`);
+  process.emit("trafgfood:pronto", PORT);
+});

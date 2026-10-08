@@ -2,16 +2,18 @@
 // PROPÕEM mudanças. Nenhuma ferramenta gasta dinheiro: as propostas voltam
 // para a tela e só são aplicadas quando a pessoa toca em "Confirmar".
 import fs from "node:fs";
+import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { campaigns, propose } from "./actions.js";
 import { store } from "./store.js";
+import { ROOT } from "./paths.js";
 
 const client = new Anthropic();
 const MODEL = process.env.CLAUDE_MODEL || "claude-opus-5-5";
 const EFFORT = process.env.CLAUDE_EFFORT || "medium";
 
 // Base de conhecimento da Delivefood (server/knowledge). Vai inteira no prompt, em cache.
-const BASE = JSON.parse(fs.readFileSync(new URL("./knowledge/base-trafego-delivery.json", import.meta.url), "utf8"));
+const BASE = JSON.parse(fs.readFileSync(path.join(ROOT, "server", "knowledge", "base-trafego-delivery.json"), "utf8"));
 const { dados_para_treinamento_supervisionado: _treino, ...BASE_PROMPT } = BASE;
 
 const PLAYBOOK = `${BASE.configuracao_do_especialista.prompt_base}
