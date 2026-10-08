@@ -17,6 +17,8 @@ const m = (c) => ({
   cpa: c.pedidos ? c.gasto7 / c.pedidos : 0,
   roas: c.gasto7 ? c.receita / c.gasto7 : 0,
 });
+// ROAS de equilíbrio = 1 / margem de contribuição (base de conhecimento Delivefood).
+const equilibrio = (c) => { const mg = Number(cli(c.clientId).margem); return mg > 0 && mg < 100 ? 100 / mg : null; };
 const stLabel = { ativa: "Ativa", pausada: "Pausada", em_analise: "Em análise" };
 const stClass = { ativa: "ativa", pausada: "pausada", em_analise: "analise" };
 const platLabel = { meta: "Meta", google: "Google" };
@@ -102,9 +104,9 @@ function alertas(list) {
   const out = [];
   for (const [p, msg] of Object.entries(ERROS)) out.push({ cls: "bad", txt: `<b>${platLabel[p]}</b>: não consegui ler as campanhas. ${esc(msg)}` });
   list.forEach((c) => {
-    const k = m(c);
-    if (c.status === "ativa" && c.pedidos > 0 && k.roas < 2.5) out.push({ cls: "bad", txt: `<b>${esc(c.nome)}</b> (${esc(cli(c.clientId).nome)}) está com ROAS ${dec(k.roas)}. Custo por pedido de ${brl2(k.cpa)}.`, id: c.id });
-    else if (c.status === "ativa" && k.roas >= 8) out.push({ cls: "good", txt: `<b>${esc(c.nome)}</b> rende ROAS ${dec(k.roas)}. Dá para testar mais orçamento.`, id: c.id });
+    const k = m(c), eq = equilibrio(c);
+    if (c.status === "ativa" && c.pedidos > 0 && eq && k.roas < eq) out.push({ cls: "bad", txt: `<b>${esc(c.nome)}</b> (${esc(cli(c.clientId).nome)}) está com ROAS ${dec(k.roas)}, abaixo do equilíbrio da loja (${dec(eq)}). Está dando prejuízo.`, id: c.id });
+    else if (c.status === "ativa" && eq && k.roas >= eq * 1.8) out.push({ cls: "good", txt: `<b>${esc(c.nome)}</b> rende ROAS ${dec(k.roas)}. Dá para testar mais orçamento.`, id: c.id });
     else if (c.status === "ativa" && c.gasto7 > 100 && c.pedidos === 0) out.push({ cls: "bad", txt: `<b>${esc(c.nome)}</b> gastou ${brl(c.gasto7)} sem nenhum pedido medido.`, id: c.id });
     if (c.status === "em_analise") out.push({ cls: "", txt: `<b>${esc(c.nome)}</b> está em análise pela plataforma.`, id: c.id });
   });
@@ -170,6 +172,7 @@ function editarLoja(id) {
     <div class="field"><label for="lj-nome">Nome</label><input id="lj-nome" value="${esc(c.nome || "")}"></div>
     <div class="grid2"><div class="field"><label for="lj-cid">Cidade / bairro</label><input id="lj-cid" value="${esc(c.cidade || "")}"></div>
     <div class="field"><label for="lj-tk">Ticket médio (R$)</label><input id="lj-tk" type="number" inputmode="decimal" value="${esc(c.ticket || "")}"></div></div>
+    <div class="field"><label for="lj-mg">Margem de contribuição antes da mídia (%)</label><input id="lj-mg" type="number" inputmode="decimal" placeholder="ex.: 28" value="${esc(c.margem || "")}"><span class="sub" style="margin:0">O que sobra do pedido depois de CMV, embalagem, taxas, entrega e impostos. Define o ROAS mínimo da loja.</span></div>
     <div class="field"><label for="lj-meta">Conta de anúncio Meta</label><input id="lj-meta" placeholder="act_1234567890" value="${esc(c.metaAdAccountId || "")}"></div>
     <div class="field"><label for="lj-goo">ID de cliente Google Ads</label><input id="lj-goo" placeholder="123-456-7890" value="${esc(c.googleCustomerId || "")}"></div>
     <div class="row"><button class="btn pri" id="lj-ok">Salvar</button><button class="btn" id="lj-x">Cancelar</button></div>`, (s) => {
@@ -177,7 +180,7 @@ function editarLoja(id) {
     s.querySelector("#lj-ok").onclick = async () => {
       const v = (q) => s.querySelector(q).value;
       try {
-        await api("/api/clients", { id: c.id, nome: v("#lj-nome"), cidade: v("#lj-cid"), ticket: v("#lj-tk"), metaAdAccountId: v("#lj-meta"), googleCustomerId: v("#lj-goo") });
+        await api("/api/clients", { id: c.id, nome: v("#lj-nome"), cidade: v("#lj-cid"), ticket: v("#lj-tk"), margem: v("#lj-mg"), metaAdAccountId: v("#lj-meta"), googleCustomerId: v("#lj-goo") });
         closeSheet(); toast("Loja salva"); load(true);
       } catch (e) { toast(e.message); }
     };
@@ -279,8 +282,8 @@ function relatorio() {
 const AJUDA = {
   gasto: ["Investido", "Quanto saiu do cartão em anúncios nos últimos 7 dias, somando Meta e Google."],
   receita: ["Receita atribuída", "Valor dos pedidos que vieram de quem clicou num anúncio. Quando a plataforma não mede vendas, o TrafgFood estima com pedidos × ticket médio da loja. Confira com o caixa."],
-  pedidos: ["Pedidos e custo por pedido", "Quantos pedidos os anúncios trouxeram. O custo por pedido é o gasto dividido pelos pedidos; para delivery, o ideal é ficar abaixo de 25% do ticket médio."],
-  roas: ["ROAS", "Quantos reais voltam para cada real investido. ROAS 5 quer dizer que R$ 100 em anúncio trouxeram R$ 500 em pedidos. Para delivery, acima de 4 é bom e abaixo de 2,5 costuma dar prejuízo."],
+  pedidos: ["Pedidos e custo por pedido", "Quantos pedidos os anúncios trouxeram. O custo por pedido é o gasto dividido pelos pedidos; para delivery, o teto é o CPA máximo da loja: ticket médio × margem de contribuição, mais a recompra esperada."],
+  roas: ["ROAS", "Quantos reais voltam para cada real investido. ROAS 5 quer dizer que R$ 100 em anúncio trouxeram R$ 500 em pedidos. O mínimo de cada loja é o ROAS de equilíbrio = 1 ÷ margem: com margem de 25%, precisa de ROAS 4 só para empatar. Cadastre a margem em Lojas e contas."],
 };
 function ajuda(k) { const [t, d] = AJUDA[k]; sheet(`<h3>${t}</h3><p style="margin:0">${d}</p><div class="row"><button class="btn" id="hx">Entendi</button></div>`, (s) => { s.querySelector("#hx").onclick = closeSheet; }); }
 

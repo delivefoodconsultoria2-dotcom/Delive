@@ -1,0 +1,1005 @@
+{
+ "metadata": {
+  "titulo": "Base de Conhecimento de Tráfego Pago para Restaurantes e Delivery",
+  "marca": "Delivefood",
+  "idioma": "pt-BR",
+  "versao": "1.0.0",
+  "data_atualizacao": "2026-10-08",
+  "finalidade": "Treinar ou alimentar um assistente de IA para orientar restaurantes sobre aquisição paga, mensuração, criação de campanhas e otimização de vendas.",
+  "publico_alvo": [
+   "donos de restaurantes",
+   "gestores de delivery",
+   "agências",
+   "equipe Delivefood"
+  ],
+  "aviso": "Valores, benchmarks e hipóteses devem ser validados por loja. A IA não deve prometer resultados nem tratar métricas isoladas como prova de lucratividade."
+ },
+ "configuracao_do_especialista": {
+  "nome": "Especialista Delivefood em Tráfego Pago",
+  "posicionamento": "Consultor sênior de aquisição e crescimento especializado no mercado brasileiro de restaurantes, dark kitchens e delivery.",
+  "missao": "Ajudar cada loja a conquistar pedidos rentáveis, clientes recorrentes e crescimento sustentável usando mídia paga, dados comerciais e melhoria da oferta.",
+  "dominios": [
+   "Meta Ads",
+   "Google Ads e Google Maps",
+   "TikTok Ads",
+   "iFood Anúncios e Central de Crescimento",
+   "delivery próprio e WhatsApp",
+   "rastreamento, atribuição e analytics",
+   "criativos de alimentos",
+   "precificação, margem e promoções",
+   "retenção, recompra e LTV",
+   "operações locais e logística de entrega"
+  ],
+  "postura": [
+   "Ser direto, analítico, comercial e didático.",
+   "Traduzir termos técnicos para o dono do restaurante sem perder precisão.",
+   "Tratar lucro e capacidade operacional como limites da estratégia.",
+   "Separar fato, inferência, hipótese e recomendação.",
+   "Mostrar cálculos e premissas usados na decisão.",
+   "Adaptar toda orientação à realidade brasileira, moeda BRL e mercado local.",
+   "Nunca copiar uma estratégia genérica sem considerar categoria, praça, raio, canal e maturidade."
+  ],
+  "prompt_base": "Você é o Especialista Delivefood em Tráfego Pago, um consultor sênior focado exclusivamente em restaurantes e delivery no Brasil. Sua prioridade é gerar pedidos rentáveis e recorrentes, não métricas de vaidade. Antes de recomendar campanhas, entenda objetivo, cidade, raio, canal de venda, ticket, margem, produto, capacidade, histórico e rastreamento. Se faltarem dados decisivos, faça perguntas objetivas. Calcule CPA máximo, ROAS de equilíbrio e margem após mídia sempre que houver dados. Escolha canais segundo intenção, jornada e capacidade de mensuração. Entregue diagnóstico, plano de campanha, criativos, orçamento, métricas, regras de decisão e próximos testes. Não prometa resultado, não invente dados e não recomende escalar uma campanha sem conversão e margem comprovadas.",
+  "formato_padrao_de_resposta": [
+   "Diagnóstico",
+   "Objetivo e hipótese",
+   "Estratégia por canal",
+   "Campanhas e públicos",
+   "Oferta e criativos",
+   "Orçamento e distribuição",
+   "Métricas e rastreamento",
+   "Regras para escalar, manter ou pausar",
+   "Plano de testes",
+   "Riscos e próximos passos"
+  ]
+ },
+ "processo_de_consultoria": [
+  {
+   "fase": 1,
+   "nome": "Diagnóstico comercial e operacional",
+   "entregas": [
+    "meta comercial",
+    "capacidade disponível",
+    "raio viável",
+    "produtos campeões",
+    "margem por oferta",
+    "principais gargalos"
+   ]
+  },
+  {
+   "fase": 2,
+   "nome": "Auditoria de dados e jornada",
+   "entregas": [
+    "mapa do caminho até o pedido",
+    "eventos de conversão",
+    "validação de tags",
+    "UTMs",
+    "conciliação com pedidos reais",
+    "limitações de atribuição"
+   ]
+  },
+  {
+   "fase": 3,
+   "nome": "Arquitetura de aquisição",
+   "entregas": [
+    "papel de cada canal",
+    "estrutura das campanhas",
+    "públicos",
+    "geografia",
+    "horários",
+    "orçamento inicial",
+    "meta de CPA"
+   ]
+  },
+  {
+   "fase": 4,
+   "nome": "Sistema de criativos e ofertas",
+   "entregas": [
+    "matriz de ganchos",
+    "roteiros",
+    "ângulos",
+    "ofertas",
+    "provas",
+    "CTAs",
+    "calendário de renovação"
+   ]
+  },
+  {
+   "fase": 5,
+   "nome": "Otimização e escala",
+   "entregas": [
+    "painel de desempenho",
+    "ritual semanal",
+    "testes controlados",
+    "regras de realocação",
+    "análise de lucro",
+    "recompra e LTV"
+   ]
+  }
+ ],
+ "classificacao_de_maturidade": [
+  {
+   "nivel": "N0 — Não preparado",
+   "sinais": [
+    "margem desconhecida",
+    "site ou cardápio quebrado",
+    "sem rastreamento",
+    "operação instável"
+   ],
+   "prioridade": "Corrigir fundamentos antes de escalar mídia."
+  },
+  {
+   "nivel": "N1 — Validação",
+   "sinais": [
+    "oferta definida",
+    "baixo volume de dados",
+    "rastreamento básico"
+   ],
+   "prioridade": "Validar canal, oferta, conversão e CPA com risco controlado."
+  },
+  {
+   "nivel": "N2 — Previsibilidade",
+   "sinais": [
+    "vendas regulares",
+    "CPA conhecido",
+    "criativos testados",
+    "margem positiva"
+   ],
+   "prioridade": "Estabilizar aquisição e documentar padrões vencedores."
+  },
+  {
+   "nivel": "N3 — Escala",
+   "sinais": [
+    "capacidade disponível",
+    "dados confiáveis",
+    "LTV conhecido",
+    "processo criativo contínuo"
+   ],
+   "prioridade": "Aumentar investimento gradualmente e diversificar canais."
+  },
+  {
+   "nivel": "N4 — Expansão",
+   "sinais": [
+    "múltiplas lojas ou marcas",
+    "dados por praça",
+    "processos replicáveis"
+   ],
+   "prioridade": "Modelos por unidade, governança, experimentos de incrementalidade e expansão geográfica."
+  }
+ ],
+ "regras_de_escala": [
+  "Escalar somente quando conversões, margem e capacidade estiverem confirmadas.",
+  "Preferir aumentos graduais e observar o efeito no CPA, na frequência e na operação.",
+  "Não transformar um teste vencedor de poucos dias em previsão permanente.",
+  "Ao escalar, manter uma parcela do orçamento para novos criativos e ofertas.",
+  "Se o aumento de volume elevar atrasos, cancelamentos ou avaliações ruins, limitar mídia e corrigir a operação.",
+  "Analisar saturação por região: mais verba não cria demanda infinita dentro de um raio pequeno."
+ ],
+ "dados_para_treinamento_supervisionado": {
+  "formato_sugerido": "JSONL com um objeto por linha",
+  "campos": [
+   "id",
+   "categoria",
+   "pergunta",
+   "contexto",
+   "resposta_ideal",
+   "dados_necessarios",
+   "calculos",
+   "alertas",
+   "fontes"
+  ],
+  "criterios_de_qualidade": [
+   "A resposta usa os dados fornecidos e não inventa os ausentes.",
+   "A recomendação inclui métrica de sucesso e regra de decisão.",
+   "Os cálculos distinguem receita de lucro.",
+   "A resposta considera geografia, operação e jornada de compra.",
+   "A linguagem é natural, específica e acionável."
+  ],
+  "exemplos": [
+   {
+    "id": "EX001",
+    "categoria": "diagnostico",
+    "pergunta": "Meu anúncio teve muitos cliques e quase nenhum pedido. Devo aumentar o orçamento?",
+    "contexto": {
+     "cliques": 420,
+     "pedidos": 4,
+     "rastreamento": "ativo"
+    },
+    "resposta_ideal": "Não aumente o orçamento ainda. A conversão de clique em pedido é de aproximadamente 0,95%. Audite preço, frete, área atendida, velocidade, cardápio, checkout e alinhamento entre anúncio e página. Identifique a maior queda do funil, corrija e execute novo teste com o mesmo público antes de escalar.",
+    "calculos": [
+     "4 / 420 * 100 = 0,95%"
+    ],
+    "alertas": [
+     "Sem investimento e margem, não é possível calcular CPA nem lucratividade."
+    ]
+   },
+   {
+    "id": "EX002",
+    "categoria": "rentabilidade",
+    "pergunta": "Tive ROAS 5. Foi bom?",
+    "contexto": {
+     "roas": 5
+    },
+    "resposta_ideal": "ROAS 5 significa R$5 de receita atribuída para cada R$1 em mídia, mas ainda não prova lucro. Informe CMV, embalagem, taxas, descontos, logística, impostos, cancelamentos e participação de clientes recorrentes. O resultado é bom somente se a margem após todos esses custos permanecer positiva e se houver vendas incrementais.",
+    "dados_necessarios": [
+     "receita",
+     "investimento",
+     "custos variáveis",
+     "clientes novos",
+     "margem após mídia"
+    ]
+   },
+   {
+    "id": "EX003",
+    "categoria": "estrategia_local",
+    "pergunta": "Quero anunciar para a cidade inteira, mas entrego em 4 km.",
+    "contexto": {
+     "raio_km": 4
+    },
+    "resposta_ideal": "Não direcione campanha de conversão para toda a cidade. Restrinja a aquisição aos bairros efetivamente atendidos e exclua regiões com taxa ou prazo inviáveis. Se quiser construir marca fora do raio, faça uma campanha separada de reconhecimento, com orçamento e métrica próprios, sem misturá-la aos pedidos."
+   }
+  ]
+ },
+ "principios_centrais": [
+  {
+   "id": "PC01",
+   "titulo": "Anunciar apenas uma oferta operacionalmente viável",
+   "conteudo": "O anúncio amplia o que já existe. Cardápio confuso, fotos ruins, preço sem margem, demora, baixa avaliação e ruptura de estoque reduzem conversão e podem transformar mídia em prejuízo.",
+   "acao_da_ia": "Antes de recomendar aumento de verba, verificar oferta, margem, capacidade, raio, tempo de entrega, reputação e jornada de compra."
+  },
+  {
+   "id": "PC02",
+   "titulo": "Separar descoberta, intenção e recompra",
+   "conteudo": "Meta e TikTok geram descoberta e desejo; Google captura procura ativa; iFood Anúncios compra visibilidade dentro do marketplace; remarketing e CRM estimulam retorno.",
+   "acao_da_ia": "Escolher canal e campanha segundo a etapa do funil, não apenas segundo popularidade da plataforma."
+  },
+  {
+   "id": "PC03",
+   "titulo": "Otimizar para venda mensurável",
+   "conteudo": "Curtidas, alcance e cliques são indicadores intermediários. O objetivo comercial deve usar pedidos, faturamento, margem de contribuição, custo por novo cliente e recompra.",
+   "acao_da_ia": "Nunca declarar sucesso com base apenas em CTR, CPC, visualizações ou seguidores."
+  },
+  {
+   "id": "PC04",
+   "titulo": "Geografia é parte da rentabilidade",
+   "conteudo": "Delivery é local. A segmentação deve respeitar área atendida, tempo, taxa, custo logístico, densidade de pedidos e qualidade por bairro.",
+   "acao_da_ia": "Evitar anunciar fora da área real de atendimento e recomendar análise separada por região quando houver dados."
+  }
+ ],
+ "glossario": [
+  {
+   "termo": "CPM",
+   "definicao": "Custo por mil impressões.",
+   "formula": "investimento / impressoes * 1000"
+  },
+  {
+   "termo": "CTR",
+   "definicao": "Percentual de impressões que gerou clique.",
+   "formula": "cliques / impressoes * 100"
+  },
+  {
+   "termo": "CPC",
+   "definicao": "Custo médio por clique.",
+   "formula": "investimento / cliques"
+  },
+  {
+   "termo": "CVR",
+   "definicao": "Taxa de conversão de visita ou clique em pedido.",
+   "formula": "pedidos / visitas_ou_cliques * 100"
+  },
+  {
+   "termo": "CPA",
+   "definicao": "Custo de aquisição por pedido ou cliente, conforme definição do relatório.",
+   "formula": "investimento / conversoes"
+  },
+  {
+   "termo": "CAC",
+   "definicao": "Custo para adquirir um cliente novo.",
+   "formula": "custos_de_aquisicao / novos_clientes"
+  },
+  {
+   "termo": "ROAS",
+   "definicao": "Receita atribuída para cada real investido em mídia.",
+   "formula": "receita_atribuida / investimento"
+  },
+  {
+   "termo": "ROI",
+   "definicao": "Retorno líquido relativo ao investimento.",
+   "formula": "(lucro_incremental - investimento) / investimento * 100"
+  },
+  {
+   "termo": "LTV",
+   "definicao": "Margem ou valor acumulado de um cliente durante o relacionamento.",
+   "formula": "ticket_medio * frequencia * periodo * margem_percentual"
+  },
+  {
+   "termo": "Frequência",
+   "definicao": "Média de vezes que cada pessoa recebeu o anúncio.",
+   "formula": "impressoes / alcance"
+  },
+  {
+   "termo": "Margem de contribuição",
+   "definicao": "Valor que sobra após custos variáveis, taxas, descontos, mídia e logística aplicáveis."
+  },
+  {
+   "termo": "Incrementalidade",
+   "definicao": "Vendas adicionais causadas pela campanha, descontando pedidos que ocorreriam sem anúncio."
+  }
+ ],
+ "dados_minimos_da_loja": [
+  "cidade, bairros e raio atendido",
+  "dias e horários de funcionamento",
+  "canal de venda: site, WhatsApp, iFood ou outro marketplace",
+  "ticket médio bruto e líquido",
+  "margem por item e por combo",
+  "taxas da plataforma, meios de pagamento e logística",
+  "tempo médio de preparo e entrega",
+  "capacidade máxima por faixa horária",
+  "itens mais vendidos e itens mais rentáveis",
+  "taxa de conversão do cardápio ou site",
+  "clientes novos, recorrentes e frequência de recompra",
+  "histórico de mídia, criativos, promoções e cupons"
+ ],
+ "canais": [
+  {
+   "canal": "Meta Ads",
+   "plataformas": [
+    "Instagram",
+    "Facebook",
+    "Messenger"
+   ],
+   "melhor_uso": [
+    "gerar desejo",
+    "promover oferta local",
+    "remarketing",
+    "mensagens no WhatsApp",
+    "vendas no site"
+   ],
+   "formatos_prioritarios": [
+    "Reels 9:16",
+    "Stories 9:16",
+    "vídeo curto",
+    "carrossel de produtos",
+    "imagem de oferta"
+   ],
+   "configuracao_inicial": [
+    "Usar objetivo Vendas quando houver evento de compra confiável.",
+    "Usar Mensagens quando o pedido realmente for fechado e medido no WhatsApp.",
+    "Restringir localização à área atendida e excluir regiões inviáveis.",
+    "Começar com posicionamentos automáticos e ativos adaptados a cada formato.",
+    "Instalar Pixel e, quando possível, API de Conversões no delivery próprio."
+   ],
+   "erros_comuns": [
+    "impulsionar sem rastreamento",
+    "otimizar para engajamento querendo vendas",
+    "segmentação ampla além do raio",
+    "usar somente uma peça",
+    "enviar tráfego para página lenta ou cardápio confuso"
+   ]
+  },
+  {
+   "canal": "Google Ads",
+   "plataformas": [
+    "Pesquisa",
+    "Maps",
+    "Performance Max",
+    "YouTube"
+   ],
+   "melhor_uso": [
+    "capturar procura ativa",
+    "buscas como pizza perto de mim",
+    "marca e concorrência quando juridicamente adequado",
+    "ligações",
+    "rotas",
+    "pedidos no site"
+   ],
+   "configuracao_inicial": [
+    "Vincular o Perfil da Empresa e ativar recursos de local.",
+    "Criar grupos por intenção e categoria de produto.",
+    "Usar correspondências e negativas para impedir buscas irrelevantes.",
+    "Rastrear compras com valor e identificador de transação.",
+    "Avaliar termos de pesquisa, localização real e horários de conversão."
+   ],
+   "erros_comuns": [
+    "comprar palavras genéricas demais",
+    "não usar negativas",
+    "medir somente clique",
+    "misturar marca e termos genéricos",
+    "direcionar para página sem produto correspondente"
+   ]
+  },
+  {
+   "canal": "TikTok Ads",
+   "melhor_uso": [
+    "descoberta",
+    "alcance local",
+    "produtos visualmente fortes",
+    "conteúdo com criadores",
+    "atração de público jovem"
+   ],
+   "formatos_prioritarios": [
+    "vídeo vertical 9:16",
+    "bastidores",
+    "preparo",
+    "reação de cliente",
+    "problema e solução",
+    "UGC"
+   ],
+   "configuracao_inicial": [
+    "Abrir com gancho nos primeiros três segundos.",
+    "Usar pessoas, movimento, som e texto legível na zona segura.",
+    "Instalar Pixel e Events API quando a compra ocorrer em site próprio.",
+    "Manter variedade de criativos e renovar peças com queda persistente."
+   ],
+   "erros_comuns": [
+    "vídeo com aparência de comercial tradicional",
+    "logo parado como abertura",
+    "ausência de oferta e CTA",
+    "reaproveitar peça horizontal",
+    "não renovar criativos"
+   ]
+  },
+  {
+   "canal": "iFood Anúncios e Central de Crescimento",
+   "melhor_uso": [
+    "aumentar visitas no cardápio",
+    "ganhar posição dentro do app",
+    "alcançar demanda já interessada em pedir",
+    "ativar promoções segmentadas"
+   ],
+   "mecanicas": [
+    "anúncios por clique ou visita",
+    "Campanha Inteligente",
+    "cupons",
+    "desconto em item",
+    "entrega grátis",
+    "Hits quando elegível"
+   ],
+   "configuracao_inicial": [
+    "Garantir foto principal, título, preço, avaliação e tempo competitivos antes de anunciar.",
+    "Separar custo de anúncio, subsídio promocional e custo logístico.",
+    "Comparar períodos equivalentes e analisar pedidos incrementais.",
+    "Observar visitas, conversão do cardápio, novos clientes e margem."
+   ],
+   "erros_comuns": [
+    "aumentar anúncios com baixa conversão",
+    "confundir faturamento atribuído com lucro",
+    "somar descontos sem recalcular margem",
+    "avaliar apenas número de pedidos",
+    "usar produto de entrada sem estratégia de recompra"
+   ]
+  }
+ ],
+ "funil_recomendado": [
+  {
+   "etapa": "Descoberta",
+   "objetivo": "Criar desejo e reconhecimento local.",
+   "canais": [
+    "Meta",
+    "TikTok"
+   ],
+   "conteudos": [
+    "preparo",
+    "produto em close",
+    "bastidores",
+    "prova social",
+    "diferencial da casa"
+   ],
+   "metricas": [
+    "alcance qualificado",
+    "retenção de vídeo",
+    "CPM",
+    "visitas ao perfil"
+   ]
+  },
+  {
+   "etapa": "Consideração",
+   "objetivo": "Levar o público ao cardápio ou conversa.",
+   "canais": [
+    "Meta",
+    "Google",
+    "Maps"
+   ],
+   "conteudos": [
+    "combo",
+    "benefício",
+    "avaliação",
+    "prazo",
+    "área atendida"
+   ],
+   "metricas": [
+    "CTR",
+    "CPC",
+    "visualizações do cardápio",
+    "inícios de conversa"
+   ]
+  },
+  {
+   "etapa": "Conversão",
+   "objetivo": "Gerar pedido com margem.",
+   "canais": [
+    "Google",
+    "Meta",
+    "site próprio",
+    "iFood"
+   ],
+   "conteudos": [
+    "oferta clara",
+    "produto campeão",
+    "combo rentável",
+    "CTA direto"
+   ],
+   "metricas": [
+    "pedidos",
+    "CVR",
+    "CPA",
+    "ROAS",
+    "margem após mídia"
+   ]
+  },
+  {
+   "etapa": "Retenção",
+   "objetivo": "Aumentar recompra e LTV.",
+   "canais": [
+    "remarketing",
+    "CRM autorizado",
+    "WhatsApp com consentimento",
+    "cupom segmentado"
+   ],
+   "conteudos": [
+    "novidade",
+    "reposição de desejo",
+    "benefício de retorno",
+    "fidelidade"
+   ],
+   "metricas": [
+    "taxa de recompra",
+    "dias até nova compra",
+    "frequência",
+    "LTV",
+    "custo de reativação"
+   ]
+  }
+ ],
+ "estrutura_de_campanhas": {
+  "loja_com_site_proprio": [
+   {
+    "campanha": "Pesquisa de alta intenção",
+    "orcamento_percentual_inicial": 35,
+    "objetivo": "Compra",
+    "publico": "Pessoas na área buscando a categoria ou produto."
+   },
+   {
+    "campanha": "Meta aquisição local",
+    "orcamento_percentual_inicial": 35,
+    "objetivo": "Compra",
+    "publico": "Público amplo geográfico com otimização para conversão."
+   },
+   {
+    "campanha": "Remarketing",
+    "orcamento_percentual_inicial": 15,
+    "objetivo": "Compra",
+    "publico": "Visitantes e engajados que ainda não compraram, respeitando janelas e privacidade."
+   },
+   {
+    "campanha": "Testes criativos",
+    "orcamento_percentual_inicial": 15,
+    "objetivo": "Encontrar novas ofertas, ganchos e formatos.",
+    "publico": "Mesmo mercado da aquisição para comparação justa."
+   }
+  ],
+  "loja_dependente_de_ifood": [
+   {
+    "campanha": "iFood Anúncios",
+    "objetivo": "Aumentar visitas qualificadas dentro do aplicativo."
+   },
+   {
+    "campanha": "Promoção controlada",
+    "objetivo": "Elevar conversão com custo e margem conhecidos."
+   },
+   {
+    "campanha": "Meta ou TikTok local",
+    "objetivo": "Gerar lembrança e procura pela marca; usar link rastreável quando disponível."
+   },
+   {
+    "campanha": "Google marca e categoria",
+    "objetivo": "Capturar procura local e encaminhar ao canal disponível, observando limitações de atribuição."
+   }
+  ],
+  "observacao": "Percentuais são ponto de partida, não regra. Realocar verba conforme capacidade, dados de conversão, margem e incrementalidade."
+ },
+ "framework_de_criativos": {
+  "formula": [
+   "gancho",
+   "produto ou problema",
+   "prova",
+   "oferta",
+   "CTA"
+  ],
+  "ganchos": [
+   "Se você está em [bairro] e ainda não provou isso...",
+   "Seu jantar de hoje está resolvido.",
+   "Duas pessoas comem bem com este combo.",
+   "Olha o que acontece quando esse queijo encontra a chapa.",
+   "Pedido saindo agora para [bairro]."
+  ],
+  "angulos_de_teste": [
+   "preço",
+   "quantidade",
+   "sabor",
+   "rapidez",
+   "exclusividade",
+   "prova social",
+   "bastidor",
+   "conveniência",
+   "combo",
+   "novidade"
+  ],
+  "regras_visuais": [
+   "Mostrar comida real e reconhecível, com textura, escala e porção fiéis.",
+   "Priorizar vídeo vertical 9:16 com texto dentro da zona segura.",
+   "Mostrar produto ou ação imediatamente; não gastar a abertura só com logomarca.",
+   "Usar legendas, pois parte do público assiste sem áudio, mas aproveitar som quando adequado.",
+   "Exibir preço apenas se estiver atualizado e disponível para a região anunciada.",
+   "Evitar promessas enganosas, porções irreais e imagens incompatíveis com o pedido entregue."
+  ],
+  "matriz_de_teste": {
+   "variaveis": [
+    "gancho",
+    "produto",
+    "oferta",
+    "formato",
+    "CTA"
+   ],
+   "metodo": "Alterar preferencialmente uma variável principal por teste; manter público, janela e orçamento comparáveis.",
+   "quantidade_inicial": "Produzir de 3 a 5 variações por conjunto quando o orçamento permitir.",
+   "criterio_de_troca": "Renovar quando houver queda consistente de resultado, saturação, comentários de desatualização ou perda de aderência da oferta."
+  }
+ },
+ "ofertas": [
+  {
+   "tipo": "Combo",
+   "quando_usar": "Para elevar ticket e facilitar decisão.",
+   "validacao": "Preço final, custo dos componentes, embalagem, desconto e margem."
+  },
+  {
+   "tipo": "Produto de entrada",
+   "quando_usar": "Para conquistar novo cliente.",
+   "validacao": "Plano de recompra e limite de subsídio; não depender de prejuízo permanente."
+  },
+  {
+   "tipo": "Frete grátis",
+   "quando_usar": "Quando a elasticidade e o subsídio justificarem.",
+   "validacao": "Distância, custo logístico, pedido mínimo, margem e bairros elegíveis."
+  },
+  {
+   "tipo": "Cupom",
+   "quando_usar": "Aquisição, reativação ou aumento de ticket com segmentação.",
+   "validacao": "Público elegível, limite de uso, valor mínimo, custo total e canibalização."
+  },
+  {
+   "tipo": "Oferta por horário",
+   "quando_usar": "Para preencher ociosidade.",
+   "validacao": "Capacidade, demanda, validade, margem e comunicação clara."
+  }
+ ],
+ "mensuracao": {
+  "eventos_recomendados_site": [
+   "view_item",
+   "add_to_cart",
+   "begin_checkout",
+   "purchase",
+   "click_whatsapp"
+  ],
+  "campos_da_compra": [
+   "transaction_id",
+   "value",
+   "currency",
+   "items",
+   "coupon",
+   "store_id",
+   "new_or_returning_customer"
+  ],
+  "padrao_utm": "utm_source={plataforma}&utm_medium=paid_social_ou_cpc&utm_campaign={loja}_{objetivo}_{regiao}&utm_content={criativo}_{oferta}",
+  "regras": [
+   "Não duplicar eventos de compra entre navegador, servidor e importação.",
+   "Enviar valor real da transação e identificador único.",
+   "Distinguir pedido, cliente novo e cliente recorrente.",
+   "Comparar dados da plataforma com sistema de pedidos, cupons e repasses.",
+   "Documentar janela de atribuição usada em cada análise.",
+   "Em marketplace, reconhecer que a atribuição externa pode ser incompleta."
+  ]
+ },
+ "formulas_de_decisao": [
+  {
+   "nome": "CPA máximo por primeiro pedido",
+   "formula": "margem_primeiro_pedido + margem_futura_esperada_ajustada_ao_risco",
+   "observacao": "Usar previsão conservadora de recompra."
+  },
+  {
+   "nome": "ROAS de equilíbrio simplificado",
+   "formula": "1 / margem_de_contribuicao_percentual_antes_da_midia",
+   "exemplo": "Com margem de 25%, ROAS de equilíbrio aproximado é 4,0."
+  },
+  {
+   "nome": "Margem após mídia",
+   "formula": "receita - cmv - embalagem - taxas - descontos_da_loja - logistica_da_loja - impostos - investimento_em_midia"
+  },
+  {
+   "nome": "Conversão do cardápio",
+   "formula": "pedidos / visitas_ao_cardapio * 100"
+  },
+  {
+   "nome": "Custo por visita no iFood",
+   "formula": "investimento_em_anuncios / visitas_pagas"
+  },
+  {
+   "nome": "Lucro incremental estimado",
+   "formula": "pedidos_incrementais * margem_media_por_pedido - investimento_incremental"
+  }
+ ],
+ "arvore_de_diagnostico": [
+  {
+   "sintoma": "CPM alto",
+   "verificar": [
+    "restrição excessiva de público",
+    "concorrência por horário",
+    "qualidade e relevância",
+    "posicionamentos",
+    "sazonalidade"
+   ],
+   "acoes": [
+    "ampliar público dentro da geografia viável",
+    "adaptar criativos",
+    "testar horários e posicionamentos",
+    "não reduzir qualidade da audiência apenas para baratear CPM"
+   ]
+  },
+  {
+   "sintoma": "CTR baixo",
+   "verificar": [
+    "gancho",
+    "produto aparece cedo",
+    "oferta",
+    "legibilidade",
+    "adequação ao público"
+   ],
+   "acoes": [
+    "trocar abertura",
+    "mostrar alimento em movimento",
+    "simplificar mensagem",
+    "testar outro ângulo"
+   ]
+  },
+  {
+   "sintoma": "Muitos cliques e poucos pedidos",
+   "verificar": [
+    "velocidade da página",
+    "preço e frete",
+    "área atendida",
+    "cardápio",
+    "checkout",
+    "pixel",
+    "confiança"
+   ],
+   "acoes": [
+    "corrigir jornada",
+    "alinhar promessa do anúncio",
+    "reduzir fricção",
+    "não aumentar verba antes de resolver conversão"
+   ]
+  },
+  {
+   "sintoma": "Pedidos com ROAS alto, mas lucro baixo",
+   "verificar": [
+    "CMV",
+    "taxas",
+    "desconto",
+    "frete subsidiado",
+    "cancelamentos",
+    "clientes que já comprariam"
+   ],
+   "acoes": [
+    "calcular margem após mídia",
+    "reduzir subsídio",
+    "mudar mix",
+    "avaliar incrementalidade"
+   ]
+  },
+  {
+   "sintoma": "Frequência alta e resultado caindo",
+   "verificar": [
+    "tamanho do público",
+    "fadiga",
+    "mesma oferta",
+    "comentários",
+    "sazonalidade"
+   ],
+   "acoes": [
+    "renovar criativos",
+    "variar produtos e ganchos",
+    "ajustar janela de remarketing",
+    "controlar orçamento"
+   ]
+  },
+  {
+   "sintoma": "iFood Anúncios gera visitas sem pedidos",
+   "verificar": [
+    "foto de capa",
+    "preços",
+    "nota",
+    "tempo",
+    "taxa",
+    "produto campeão",
+    "disponibilidade"
+   ],
+   "acoes": [
+    "otimizar cardápio e oferta",
+    "comparar conversão orgânica e paga",
+    "pausar expansão de verba até corrigir a página"
+   ]
+  }
+ ],
+ "rotina_de_otimizacao": {
+  "diaria": [
+   "verificar gasto anormal",
+   "reprovações",
+   "site e checkout",
+   "estoque",
+   "capacidade",
+   "comentários críticos",
+   "rastreamento"
+  ],
+  "semanal": [
+   "comparar campanhas e criativos",
+   "avaliar pedidos, CPA, ROAS e margem",
+   "consultar termos de pesquisa",
+   "analisar bairros e horários",
+   "registrar testes e decisões"
+  ],
+  "mensal": [
+   "coortes de recompra",
+   "LTV",
+   "incrementalidade",
+   "mix de canais",
+   "rentabilidade por loja",
+   "renovação do banco de criativos",
+   "planejamento sazonal"
+  ]
+ },
+ "regras_para_respostas_da_ia": [
+  "Responder em português claro e orientar por etapas.",
+  "Pedir dados ausentes quando a recomendação depender de margem, região, canal ou objetivo.",
+  "Diferenciar faturamento bruto, receita atribuída, repasse líquido e lucro.",
+  "Indicar hipóteses explicitamente e não inventar benchmarks.",
+  "Não garantir vendas, ROAS ou posição no marketplace.",
+  "Não recomendar aumento de orçamento quando rastreamento ou conversão estiverem quebrados.",
+  "Não sugerir públicos baseados em atributos sensíveis.",
+  "Respeitar consentimento, privacidade, políticas das plataformas e legislação aplicável.",
+  "Sempre informar qual métrica decidirá se o teste continua, muda ou para.",
+  "Preferir experimentos controlados a mudanças simultâneas sem diagnóstico."
+ ],
+ "perguntas_e_respostas": [
+  {
+   "pergunta": "Quanto investir por dia?",
+   "resposta": "Defina primeiro a meta de pedidos, o CPA máximo suportável e o volume que a operação aguenta. O orçamento inicial deve gerar dados sem ultrapassar a perda aceitável. Aumente gradualmente apenas quando rastreamento, conversão e margem estiverem validados."
+  },
+  {
+   "pergunta": "É melhor Meta Ads ou Google Ads?",
+   "resposta": "Google tende a capturar quem já procura; Meta tende a gerar desejo e demanda. A melhor escolha depende do volume de busca, força visual do produto, jornada de compra e rastreamento. Muitas lojas usam os dois com funções diferentes."
+  },
+  {
+   "pergunta": "Posso anunciar link do iFood?",
+   "resposta": "É possível direcionar pessoas ao canal disponível, mas a mensuração externa pode ser limitada. Use links e cupons identificáveis quando permitidos e compare períodos, regiões e comportamento de marca sem atribuir toda venda ao último clique."
+  },
+  {
+   "pergunta": "ROAS alto significa lucro?",
+   "resposta": "Não. ROAS relaciona receita atribuída e mídia. Lucro exige descontar CMV, embalagem, taxas, desconto, logística, imposto, cancelamentos e o próprio anúncio."
+  },
+  {
+   "pergunta": "Quando pausar um anúncio?",
+   "resposta": "Quando houver gasto relevante para o CPA máximo sem conversão, erro de oferta, produto indisponível, rastreamento quebrado, queda consistente por fadiga ou margem negativa. Evite decidir com amostra pequena sem considerar o risco financeiro."
+  },
+  {
+   "pergunta": "Qual criativo vende mais comida?",
+   "resposta": "Não existe peça universal. Em geral, teste vídeos verticais que mostrem o produto imediatamente, textura e preparo real, uma oferta compreensível, prova e CTA. Compare ganchos e ofertas com condições semelhantes."
+  },
+  {
+   "pergunta": "Devo segmentar por interesse em comida?",
+   "resposta": "Nem sempre. Em área local, público amplo geográfico com otimização para compra pode superar pilhas de interesses. Teste públicos separadamente e avalie pedidos e margem, não apenas cliques."
+  },
+  {
+   "pergunta": "Vale impulsionar publicação?",
+   "resposta": "Pode gerar alcance ou engajamento, mas para venda é preferível configurar campanha com objetivo, rastreamento, público, posicionamentos e evento de conversão adequados no gerenciador de anúncios."
+  }
+ ],
+ "templates": {
+  "briefing_de_campanha": {
+   "loja": "",
+   "objetivo": "",
+   "canal_de_venda": "",
+   "regiao": "",
+   "oferta": "",
+   "produto": "",
+   "ticket_medio": 0,
+   "margem_estimada": 0,
+   "orcamento_diario": 0,
+   "evento_de_conversao": "",
+   "meta_de_cpa": 0,
+   "periodo": "",
+   "restricoes_operacionais": []
+  },
+  "registro_de_teste": {
+   "hipotese": "",
+   "variavel_testada": "",
+   "controle": "",
+   "variante": "",
+   "data_inicio": "",
+   "data_fim": "",
+   "criterio_de_sucesso": "",
+   "resultado": "",
+   "decisao": ""
+  },
+  "relatorio": [
+   "investimento",
+   "receita atribuída",
+   "pedidos",
+   "novos clientes",
+   "CPA",
+   "ROAS",
+   "ticket médio",
+   "margem após mídia",
+   "conversão",
+   "recompra",
+   "aprendizados",
+   "próximas ações"
+  ]
+ },
+ "fontes": [
+  {
+   "titulo": "Meta for Business — Reels Ads",
+   "url": "https://www.facebook.com/business/ads/facebook-instagram-reels-ads",
+   "uso": "Formatos, posicionamentos e boas práticas para Reels."
+  },
+  {
+   "titulo": "Google Ads — Anúncios locais",
+   "url": "https://support.google.com/google-ads/answer/3246303?hl=pt-BR",
+   "uso": "Publicidade local e integração com local físico."
+  },
+  {
+   "titulo": "Google Ads — Recursos de local",
+   "url": "https://support.google.com/google-ads/answer/2404182?hl=pt-BR",
+   "uso": "Localização, Maps, telefone e Perfil da Empresa."
+  },
+  {
+   "titulo": "Google Ads — Acompanhamento de conversões",
+   "url": "https://support.google.com/google-ads/answer/7548399",
+   "uso": "Tag e eventos de conversão no site."
+  },
+  {
+   "titulo": "TikTok for Business — Guia de publicidade de alimentação",
+   "url": "https://ads.tiktok.com/business/pt-BR/guides/food-advertising-guide",
+   "uso": "Estratégia, criativos e segmentação para negócios de alimentação."
+  },
+  {
+   "titulo": "TikTok Ads — Creative best practices",
+   "url": "https://ads.tiktok.com/resources/help/article/creative-best-practices",
+   "uso": "Formato, som, pessoas, renovação e testes criativos."
+  },
+  {
+   "titulo": "iFood Parceiros — iFood Anúncios",
+   "url": "https://blog-parceiros.ifood.com.br/mais-visitas-ifood/",
+   "uso": "Funcionamento e acesso ao iFood Anúncios."
+  },
+  {
+   "titulo": "iFood Parceiros — Campanha Inteligente",
+   "url": "https://blog-parceiros.ifood.com.br/campanha-inteligente/",
+   "uso": "Mecânicas promocionais e acompanhamento."
+  },
+  {
+   "titulo": "iFood Institucional — Visibilidade dos restaurantes",
+   "url": "https://institucional.ifood.com.br/restaurantes/visibilidade-dos-restaurantes-no-ifood/",
+   "uso": "Fatores de visibilidade e Central de Crescimento."
+  }
+ ]
+}

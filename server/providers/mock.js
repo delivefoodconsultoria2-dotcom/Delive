@@ -3,11 +3,11 @@
 import { store } from "../store.js";
 
 const SEED_CLIENTS = [
-  { id: "zeburger", nome: "Zé Burger", cidade: "Campinas · 3 lojas", cor: "#D9480F", ticket: 48, metaAdAccountId: "", googleCustomerId: "" },
-  { id: "bella", nome: "Bella Napoli Pizzaria", cidade: "São Paulo · Moema", cor: "#2B8A3E", ticket: 92, metaAdAccountId: "", googleCustomerId: "" },
-  { id: "kaze", nome: "Sushi Kaze", cidade: "Curitiba · Batel", cor: "#C2255C", ticket: 130, metaAdAccountId: "", googleCustomerId: "" },
-  { id: "acai", nome: "Açaí Tropical", cidade: "Santos · 2 lojas", cor: "#7048E8", ticket: 32, metaAdAccountId: "", googleCustomerId: "" },
-  { id: "casamae", nome: "Marmitaria Casa Mãe", cidade: "Belo Horizonte", cor: "#1971C2", ticket: 26, metaAdAccountId: "", googleCustomerId: "" },
+  { id: "zeburger", nome: "Zé Burger", cidade: "Campinas · 3 lojas", cor: "#D9480F", ticket: 48, margem: 30, metaAdAccountId: "", googleCustomerId: "" },
+  { id: "bella", nome: "Bella Napoli Pizzaria", cidade: "São Paulo · Moema", cor: "#2B8A3E", ticket: 92, margem: 28, metaAdAccountId: "", googleCustomerId: "" },
+  { id: "kaze", nome: "Sushi Kaze", cidade: "Curitiba · Batel", cor: "#C2255C", ticket: 130, margem: 32, metaAdAccountId: "", googleCustomerId: "" },
+  { id: "acai", nome: "Açaí Tropical", cidade: "Santos · 2 lojas", cor: "#7048E8", ticket: 32, margem: 35, metaAdAccountId: "", googleCustomerId: "" },
+  { id: "casamae", nome: "Marmitaria Casa Mãe", cidade: "Belo Horizonte", cor: "#1971C2", ticket: 26, margem: 22, metaAdAccountId: "", googleCustomerId: "" },
 ];
 
 const C = (id, clientId, plataforma, canal, nome, objetivo, status, orcamento, gasto7, impressoes, cliques, pedidos, ticket, serie) => ({

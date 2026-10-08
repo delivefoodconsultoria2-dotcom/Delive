@@ -1,6 +1,7 @@
 // Gestor de tráfego IA: Claude com ferramentas que leem as campanhas e
 // PROPÕEM mudanças. Nenhuma ferramenta gasta dinheiro: as propostas voltam
 // para a tela e só são aplicadas quando a pessoa toca em "Confirmar".
+import fs from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import { campaigns, propose } from "./actions.js";
 import { store } from "./store.js";
@@ -9,29 +10,27 @@ const client = new Anthropic();
 const MODEL = process.env.CLAUDE_MODEL || "claude-opus-5-5";
 const EFFORT = process.env.CLAUDE_EFFORT || "medium";
 
-const PLAYBOOK = `Você é o gestor de tráfego pago sênior do TrafgFood, especializado em restaurantes (delivery e salão), trabalhando para a Delivefood Consultoria, que cuida de vários restaurantes. Quem fala com você NÃO sabe fazer tráfego pago: você decide a estratégia, recomenda o que fazer e explica em linguagem simples, sem jargão (se usar um termo como ROAS ou CPA, explique em meia frase). Sempre termine com a próxima ação concreta que você recomenda.
-Fale português do Brasil, direto, no máximo 6 linhas (a resposta pode ser lida em voz alta). Valores em reais.
+// Base de conhecimento da Delivefood (server/knowledge). Vai inteira no prompt, em cache.
+const BASE = JSON.parse(fs.readFileSync(new URL("./knowledge/base-trafego-delivery.json", import.meta.url), "utf8"));
+const { dados_para_treinamento_supervisionado: _treino, ...BASE_PROMPT } = BASE;
 
-Cartilha para restaurantes:
-- Meta (Instagram/Facebook) gera desejo e pedidos por impulso; Google Pesquisa pega quem já está procurando ("pizza delivery Moema"). Restaurante novo começa no Meta; Google entra quando há busca na região.
-- Público: raio de entrega real (3 a 7 km), 18 a 55 anos, segmentação aberta em vez de muitos interesses.
-- Criativo: vídeo curto vertical do prato de perto, oferta clara nos 3 primeiros segundos, botão para pedir. Tenha 3 a 5 criativos e troque os que cansarem (CTR caindo).
-- Horários: concentre verba de 11h às 14h e de 18h às 23h; sexta a domingo rendem mais.
-- Orçamento inicial: R$ 20 a 50/dia por campanha; campanha nova leva cerca de 7 dias aprendendo, não mexa antes.
-- Escala: custo por pedido bom → suba no máximo 20% a cada 3 dias. Ruim por 5+ dias → troque criativo antes de pausar.
-- Metas: custo por pedido até ~25% do ticket médio; ROAS (receita ÷ gasto) acima de 4 é bom, abaixo de 2,5 é prejuízo para delivery.
-- Canal do pedido: prefira WhatsApp ou site próprio (sem comissão de 12% a 27% do iFood); iFood quando a loja não tem atendimento próprio bom.
-- Salão: alcance local ou mensagens para reservas, raio de 2 a 4 km, criativo do ambiente; Google com "restaurante perto de mim".
-- Por tipo: hamburgueria e pizzaria → combo e oferta; japonês → combinado e foto de alto valor; marmitaria → assinatura semanal, almoço em dias úteis; açaí e doces → calor e fim de tarde.
-- Datas e clima: reforce verba em dia de jogo, chuva, frio (pizza, caldos), calor (açaí), Dia dos Namorados, Dia das Mães, fim de mês. Reduza em segunda e terça se o custo por pedido subir.
-- Recompra: remarketing para quem já pediu, com cupom de volta.
-- Plano mensal: divida por 30, ~70% Meta e ~30% Google (100% Meta abaixo de R$ 600/mês).
+const PLAYBOOK = `${BASE.configuracao_do_especialista.prompt_base}
 
-Como agir:
-- Use buscar_campanhas para ver números antes de opinar sobre uma loja.
+Você trabalha dentro do TrafgFood, o sistema de tráfego pago da Delivefood Consultoria, que atende vários restaurantes. Quem fala com você pode não saber tráfego pago: explique sem jargão (se usar um termo como ROAS ou CPA, explique em meia frase) e termine sempre com a próxima ação concreta e a métrica que vai decidir se ela continua, muda ou para.
+
+Tamanho da resposta: por padrão até 8 linhas, porque pode ser lida em voz alta. Use o formato completo da base (Diagnóstico, Objetivo e hipótese, Estratégia por canal, ...) só quando pedirem um plano, diagnóstico completo ou estratégia de uma loja.
+
+Fonte de verdade: a BASE DE CONHECIMENTO DELIVEFOOD abaixo. Siga os princípios, a árvore de diagnóstico, as fórmulas de decisão, as regras de escala e as regras para respostas da IA. Não use benchmarks fixos de mercado: calcule ROAS de equilíbrio e CPA máximo da loja com as fórmulas da base. Quando a margem da loja não estiver cadastrada, diga que é hipótese, use a margem informada pela pessoa ou peça o dado.
+
+Como agir no sistema:
+- Use buscar_campanhas para ver números antes de opinar sobre uma loja. Os resultados já trazem roas_equilibrio, cpa_maximo e margem_apos_midia_estimada quando a loja tem ticket e margem cadastrados.
 - Para pausar, reativar, mudar orçamento ou criar campanha, use as ferramentas propor_*. Elas NÃO executam: criam uma proposta que a pessoa confirma na tela. Diga "deixei pronto para você confirmar", nunca "fiz".
+- Nunca proponha aumentar orçamento de campanha sem conversão medida ou com ROAS abaixo do equilíbrio da loja.
 - Se o pedido servir para mais de uma campanha e não estiver claro qual, pergunte antes.
-- Os números de receita podem ser estimados (pedidos × ticket médio) quando a plataforma não mede vendas; avise quando isso importar.`;
+- Receita marcada como estimada (pedidos × ticket) não é prova de lucro; avise quando isso importar.
+
+BASE DE CONHECIMENTO DELIVEFOOD (dados de referência, versão ${BASE.metadata.versao}):
+${JSON.stringify(BASE_PROMPT)}`;
 
 const TOOLS = [
   {
@@ -100,7 +99,20 @@ function resumoCampanha(c) {
     roas: c.gasto7 ? +(c.receita / c.gasto7).toFixed(2) : null,
     ctr_pct: c.impressoes ? +((c.cliques / c.impressoes) * 100).toFixed(2) : null,
     receita_estimada: Boolean(c.receitaEstimada || c.exemplo),
+    ...metasDaLoja(c),
   };
+}
+
+// Fórmulas de decisão da base: ROAS de equilíbrio = 1 / margem; CPA máximo do 1º pedido = ticket × margem.
+function metasDaLoja(c) {
+  const loja = store.get().clients.find((x) => x.id === c.clientId);
+  const margem = Number(loja?.margem) / 100;
+  if (!(margem > 0 && margem < 1)) return { margem_cadastrada: false };
+  const ticket = Number(loja.ticket) || 0;
+  const out = { margem_cadastrada: true, margem_pct: loja.margem, roas_equilibrio: +(1 / margem).toFixed(2) };
+  if (ticket) out.cpa_maximo_primeiro_pedido = +(ticket * margem).toFixed(2);
+  if (c.receita) out.margem_apos_midia_estimada = Math.round(c.receita * margem - c.gasto7);
+  return out;
 }
 
 async function runTool(name, input, proposals) {
@@ -146,7 +158,7 @@ async function runTool(name, input, proposals) {
 
 // history: [{role:"user"|"assistant", content:string}], terminando na fala da pessoa.
 export async function ask(history) {
-  const lojas = store.get().clients.map((c) => ({ id: c.id, nome: c.nome, cidade: c.cidade, ticket_medio: c.ticket }));
+  const lojas = store.get().clients.map((c) => ({ id: c.id, nome: c.nome, cidade: c.cidade, ticket_medio: c.ticket, margem_pct: c.margem || null }));
   const messages = history.slice(-16).map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: String(m.content) }));
   if (messages[0]?.role !== "user") messages.shift();
   const proposals = [];

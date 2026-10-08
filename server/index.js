@@ -86,6 +86,7 @@ app.post("/api/clients", wrap(async (req, res) => {
       nome: String(b.nome),
       cidade: String(b.cidade || ""),
       ticket: Number(b.ticket) || 0,
+      margem: Number(b.margem) || 0,
       metaAdAccountId: String(b.metaAdAccountId || "").trim(),
       googleCustomerId: String(b.googleCustomerId || "").trim(),
     });

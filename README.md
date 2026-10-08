@@ -7,7 +7,7 @@ Painel por loja, campanhas, gestor de tráfego IA por voz e texto, e confirmaç�
 
 - **Servidor** (`server/`): guarda as lojas, lê as campanhas nas plataformas e aplica mudanças. As chaves das plataformas ficam só aqui.
 - **App** (`web/`): abre no navegador do PC e do celular e pode ser instalado como aplicativo (botão "Instalar" do Chrome/Edge ou "Adicionar à tela de início" no celular).
-- **Gestor de tráfego IA** (`server/copilot.js`): Claude com uma cartilha de tráfego para restaurantes. Ele lê os números e **propõe** pausas, orçamentos e campanhas; nada é aplicado sem o toque em "Confirmar".
+- **Gestor de tráfego IA** (`server/copilot.js`): Claude treinado com a Base de Conhecimento de Tráfego Pago da Delivefood (`server/knowledge/base-trafego-delivery.json`): árvore de diagnóstico, fórmulas de ROAS de equilíbrio e CPA máximo, regras de escala, framework de criativos e rotina de otimização. Ele lê os números e **propõe** pausas, orçamentos e campanhas; nada é aplicado sem o toque em "Confirmar".
 - **Modo exemplo**: plataforma sem credenciais usa dados de exemplo. Dá para testar tudo sem conta conectada.
 - **Auditoria**: toda alteração fica registrada com quem fez, de onde (tela ou gestor IA) e o resultado.
 
@@ -37,7 +37,7 @@ Passo a passo em [`docs/requisitos-apis.md`](docs/requisitos-apis.md). Resumo:
 | Google Ads | Conta de administrador (MCC), developer token com Basic Access, cliente OAuth do Google Cloud e refresh token | `GOOGLE_ADS_*` |
 | Gestor IA | Chave da Claude API | `ANTHROPIC_API_KEY` |
 
-Depois, em **Lojas e contas**, cadastre em cada loja o ID da conta de anúncio Meta (`act_...`) e o ID de cliente Google Ads (`123-456-7890`).
+Depois, em **Lojas e contas**, cadastre em cada loja o ticket médio, a margem de contribuição (define o ROAS mínimo da loja), o ID da conta de anúncio Meta (`act_...`) e o ID de cliente Google Ads (`123-456-7890`).
 
 ## Limites desta versão
 
