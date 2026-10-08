@@ -13,7 +13,9 @@ Painel por loja, campanhas, gestor de tráfego IA por voz e texto, e confirmaç�
 
 ## Rodar no computador
 
-Precisa de Node.js 20 ou mais novo.
+Jeito fácil: instale o Node.js (https://nodejs.org), baixe o projeto e dê dois cliques em `iniciar-windows.bat` (Windows) ou `iniciar-mac.command` (Mac). Na primeira vez ele abre o arquivo `.env` para você colocar a `ANTHROPIC_API_KEY`; depois abre o TrafgFood no navegador em http://localhost:3000.
+
+Pelo terminal (Node.js 20 ou mais novo):
 
 ```bash
 npm install
