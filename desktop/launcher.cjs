@@ -68,7 +68,7 @@ const SEGUNDO_PLANO = process.argv.includes("--segundo-plano");
 // Avisos para os erros de preenchimento mais comuns no configuracao.txt.
 const E = process.env;
 if (E.ANTHROPIC_API_KEY && !E.ANTHROPIC_API_KEY.startsWith("sk-ant-api")) console.log("Atenção: ANTHROPIC_API_KEY não parece uma chave de API. Ela deve começar com sk-ant-api. Gere em console.anthropic.com > API Keys.");
-if (/^4\//.test(E.GOOGLE_ADS_DEVELOPER_TOKEN || "")) console.log("Atenção: GOOGLE_ADS_DEVELOPER_TOKEN está com um código de autorização (começa com 4/). O developer token vem de ads.google.com > Central de API; se não tiver, deixe vazio.");
+if (/^4\//.test(E.GOOGLE_ADS_DEVELOPER_TOKEN || "")) console.log("Atenção: GOOGLE_ADS_DEVELOPER_TOKEN está com um código de autorização (começa com 4/). O developer token vem de ads.google.com > Central de API; se não tiver, deixe vazio."), delete E.GOOGLE_ADS_DEVELOPER_TOKEN;
 if (E.GOOGLE_ADS_CLIENT_SECRET && !E.GOOGLE_ADS_REFRESH_TOKEN) console.log("Atenção: falta GOOGLE_ADS_REFRESH_TOKEN (começa com 1//). Sem ele o Google Ads fica em modo exemplo.");
 else if (E.GOOGLE_ADS_REFRESH_TOKEN && !E.GOOGLE_ADS_REFRESH_TOKEN.startsWith("1//")) console.log("Atenção: GOOGLE_ADS_REFRESH_TOKEN deve começar com 1//. Use o refresh token, não o código de autorização.");
 
