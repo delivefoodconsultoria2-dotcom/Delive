@@ -4,15 +4,12 @@ services:
   - type: web
     name: trafgfood
     runtime: docker
-    plan: starter
+    # Plano grátis: dorme sem uso e apaga lojas e histórico a cada atualização.
+    # Para manter os dados, troque para "starter" e acrescente:
+    #   disk: { name: dados, mountPath: /data, sizeGB: 1 }  e  DATA_DIR=/data
+    plan: free
     healthCheckPath: /manifest.webmanifest
-    disk:
-      name: dados
-      mountPath: /data
-      sizeGB: 1
     envVars:
-      - key: DATA_DIR
-        value: /data
       - key: APP_USER_NAME
         value: Edson Jr
       - key: APP_PASSWORD
