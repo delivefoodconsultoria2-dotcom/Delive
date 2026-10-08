@@ -78,22 +78,39 @@ app.post("/api/clients", wrap(async (req, res) => {
   if (!b.nome) throw new Error("Informe o nome da loja.");
   const out = store.update((d) => {
     let c = b.id && d.clients.find((x) => x.id === b.id);
+    const nova = !c;
     if (!c) {
-      c = { id: store.id("loja"), cor: "#1DB46A" };
+      c = { id: store.id("loja") };
       d.clients.push(c);
     }
     Object.assign(c, {
       nome: String(b.nome),
+      cor: /^#[0-9a-f]{6}$/i.test(b.cor) ? b.cor : c.cor || "#1DB46A",
       cidade: String(b.cidade || ""),
       ticket: Number(b.ticket) || 0,
       margem: Number(b.margem) || 0,
       metaAdAccountId: String(b.metaAdAccountId || "").trim(),
       googleCustomerId: String(b.googleCustomerId || "").trim(),
     });
-    return c;
+    return { ...c, nova };
   });
+  store.audit({ quem: USER, origem: "tela", acao: "loja", resultado: (out.nova ? "Loja cadastrada: " : "Loja atualizada: ") + out.nome });
   invalidate();
   res.json(out);
+}));
+
+// Excluir tira a loja só do TrafgFood. As contas e campanhas nas plataformas continuam como estão.
+app.delete("/api/clients/:id", wrap(async (req, res) => {
+  const nome = store.update((d) => {
+    const c = d.clients.find((x) => x.id === req.params.id);
+    if (!c) throw new Error("Loja não encontrada.");
+    d.clients = d.clients.filter((x) => x.id !== c.id);
+    d.actions = d.actions.filter((a) => !(a.status === "pendente" && a.dados?.clientId === c.id));
+    return c.nome;
+  });
+  store.audit({ quem: USER, origem: "tela", acao: "excluir_loja", resultado: "Loja excluída: " + nome });
+  invalidate();
+  res.json({ ok: true });
 }));
 
 app.use(express.static(WEB, { extensions: ["html"] }));

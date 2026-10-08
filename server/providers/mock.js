@@ -29,7 +29,9 @@ const SEED_CAMPAIGNS = [
 
 export function seedIfEmpty() {
   store.update((d) => {
-    if (!d.clients.length) d.clients = structuredClone(SEED_CLIENTS);
+    // Só semeia na primeira vez: se a pessoa excluir todas as lojas, elas não voltam.
+    if (!d.clients.length && !d.seeded) d.clients = structuredClone(SEED_CLIENTS);
+    d.seeded = true;
     if (!d.mockCampaigns) d.mockCampaigns = structuredClone(SEED_CAMPAIGNS);
   });
 }

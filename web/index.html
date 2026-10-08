@@ -121,6 +121,10 @@ svg text{fill:var(--muted);font:11px var(--f-data)}
 .voicebar{max-width:560px;margin:0 auto;padding:0 16px 6px;display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted)}
 .voicebar label{display:flex;gap:6px;align-items:center}
 
+.cores{display:flex;flex-wrap:wrap;gap:10px}
+.cor{width:30px;height:30px;border-radius:50%;border:2px solid transparent;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.cor[aria-pressed="true"]{border-color:var(--bg);box-shadow:0 0 0 2px var(--fg)}
+.btn.danger{color:#E8505B;border-color:#E8505B55}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:7;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
 nav.tabs button{border:0;background:none;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:500;color:var(--muted)}
@@ -205,6 +209,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
   <div class="grp">AÇÕES RÁPIDAS</div>
   <nav class="snav">
     <button data-act="nova"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nova campanha</button>
+    <button data-act="novaloja"><svg viewBox="0 0 24 24"><path d="M3 10h18l-2-5H5zM5 10v9h14v-9M12 12v5M9.5 14.5h5"/></svg>Nova loja</button>
     <button data-ask="Faz um diagnóstico da semana e me diz o que fazer hoje"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Diagnóstico da semana</button>
     <button data-act="relatorio"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>Relatório para o cliente</button>
   </nav>

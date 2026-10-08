@@ -37,8 +37,9 @@ function toast(t) {
 }
 
 // ---------- API ----------
-async function api(path, body) {
-  const res = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+async function api(path, body, method) {
+  const opts = method ? { method } : body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+  const res = await fetch(path, opts);
   const json = await res.json().catch(() => ({}));
   if (res.status === 401 && path !== "/api/login") { showLogin(); throw new Error(json.erro || "Entre com a senha."); }
   if (!res.ok) throw new Error(json.erro || "Erro " + res.status);
@@ -166,22 +167,38 @@ function viewClientes() {
       ${CONEX.google ? `<div class="sub" style="margin:0">Cadastre o ID de cliente Google Ads (123-456-7890) em cada loja.</div>` : `<ol><li>Conta de administrador (MCC) com os clientes vinculados</li><li>Developer token com Basic Access</li><li>Login OAuth do Google Cloud nas variáveis GOOGLE_ADS_* do servidor</li></ol>`}</div>
   </div>`;
 }
+const CORES = ["#1DB46A","#0E7C66","#2F80ED","#7B61FF","#E8505B","#F2994A","#F2C94C","#8D6E63"];
 function editarLoja(id) {
   const c = CLIENTES.find((x) => x.id === id) || {};
+  let cor = c.cor || CORES[CLIENTES.length % CORES.length];
   sheet(`<h3>${c.id ? "Editar loja" : "Nova loja"}</h3>
+    <p class="sub" style="margin:-4px 0 8px">${c.id ? "Dados usados nos cálculos de ROAS mínimo e custo máximo por pedido." : "Cadastre o restaurante e as contas de anúncio dele."}</p>
     <div class="field"><label for="lj-nome">Nome</label><input id="lj-nome" value="${esc(c.nome || "")}"></div>
     <div class="grid2"><div class="field"><label for="lj-cid">Cidade / bairro</label><input id="lj-cid" value="${esc(c.cidade || "")}"></div>
     <div class="field"><label for="lj-tk">Ticket médio (R$)</label><input id="lj-tk" type="number" inputmode="decimal" value="${esc(c.ticket || "")}"></div></div>
     <div class="field"><label for="lj-mg">Margem de contribuição antes da mídia (%)</label><input id="lj-mg" type="number" inputmode="decimal" placeholder="ex.: 28" value="${esc(c.margem || "")}"><span class="sub" style="margin:0">O que sobra do pedido depois de CMV, embalagem, taxas, entrega e impostos. Define o ROAS mínimo da loja.</span></div>
     <div class="field"><label for="lj-meta">Conta de anúncio Meta</label><input id="lj-meta" placeholder="act_1234567890" value="${esc(c.metaAdAccountId || "")}"></div>
     <div class="field"><label for="lj-goo">ID de cliente Google Ads</label><input id="lj-goo" placeholder="123-456-7890" value="${esc(c.googleCustomerId || "")}"></div>
-    <div class="row"><button class="btn pri" id="lj-ok">Salvar</button><button class="btn" id="lj-x">Cancelar</button></div>`, (s) => {
+    <div class="field"><label>Cor de identificação</label><div class="cores" id="lj-cor">${CORES.map((k) => `<button type="button" class="cor" data-cor="${k}" style="background:${k}" aria-label="Cor ${k}" aria-pressed="${k === cor}"></button>`).join("")}</div></div>
+    <div class="row"><button class="btn pri" id="lj-ok">${c.id ? "Salvar alterações" : "Cadastrar loja"}</button><button class="btn" id="lj-x">Cancelar</button>${c.id ? `<button class="btn danger" id="lj-del" style="margin-left:auto">Excluir</button>` : ""}</div>`, (s) => {
     s.querySelector("#lj-x").onclick = closeSheet;
+    s.querySelector("#lj-cor").onclick = (e) => {
+      const b = e.target.closest("[data-cor]");
+      if (!b) return;
+      cor = b.dataset.cor;
+      s.querySelectorAll("#lj-cor .cor").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    };
+    const del = s.querySelector("#lj-del");
+    if (del) del.onclick = async () => {
+      if (!del.dataset.sure) { del.dataset.sure = "1"; del.textContent = "Toque de novo para excluir"; return; }
+      try { await api(`/api/clients/${encodeURIComponent(c.id)}`, null, "DELETE"); closeSheet(); toast("Loja excluída do TrafgFood"); if (state.client === c.id) state.client = "todos"; load(true); }
+      catch (e) { toast(e.message); }
+    };
     s.querySelector("#lj-ok").onclick = async () => {
       const v = (q) => s.querySelector(q).value;
       try {
-        await api("/api/clients", { id: c.id, nome: v("#lj-nome"), cidade: v("#lj-cid"), ticket: v("#lj-tk"), margem: v("#lj-mg"), metaAdAccountId: v("#lj-meta"), googleCustomerId: v("#lj-goo") });
-        closeSheet(); toast("Loja salva"); load(true);
+        await api("/api/clients", { id: c.id, nome: v("#lj-nome"), cidade: v("#lj-cid"), ticket: v("#lj-tk"), margem: v("#lj-mg"), metaAdAccountId: v("#lj-meta"), googleCustomerId: v("#lj-goo"), cor });
+        closeSheet(); toast(c.id ? "Loja salva" : "Loja cadastrada"); load(true);
       } catch (e) { toast(e.message); }
     };
   });
@@ -377,6 +394,7 @@ function handleClick(e) {
   if (d.say) { $("#chatInput").value = d.say; return send(); }
   if (d.loja !== undefined) return editarLoja(d.loja);
   if (d.act === "nova") return novaCampanha();
+  if (d.act === "novaloja") return editarLoja("");
   if (d.act === "relatorio") return relatorio();
 }
 for (const sel of ["#side", "#view", "#tabs"]) $(sel).addEventListener("click", handleClick);
