@@ -29,9 +29,11 @@ export function invalidate() {
 }
 
 export async function state() {
-  const { data, errors } = await campaigns();
+  const { data, errors, at } = await campaigns();
   const db = store.get();
   return {
+    atualizadoEm: new Date(at).toISOString(),
+    ia: Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN),
     clients: db.clients,
     campaigns: data,
     errors,

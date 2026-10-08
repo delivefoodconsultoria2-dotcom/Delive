@@ -8,7 +8,7 @@ const nf = (v) => Number(v || 0).toLocaleString("pt-BR");
 const dec = (v, n = 1) => Number(v).toFixed(n).replace(".", ",");
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
-let CLIENTES = [], CAMPANHAS = [], LOG = [], ERROS = {}, CONEX = {};
+let CLIENTES = [], CAMPANHAS = [], LOG = [], ERROS = {}, CONEX = {}, IA = false, ATUALIZADO = null;
 const cli = (id) => CLIENTES.find((c) => c.id === id) || { nome: id, cor: "#555" };
 const camp = (id) => CAMPANHAS.find((c) => c.id === id);
 const m = (c) => ({
@@ -19,12 +19,27 @@ const m = (c) => ({
 });
 // ROAS de equilíbrio = 1 / margem de contribuição (base de conhecimento Delivefood).
 const equilibrio = (c) => { const mg = Number(cli(c.clientId).margem); return mg > 0 && mg < 100 ? 100 / mg : null; };
+// Saúde pela régua da base Delivefood: ROAS abaixo do equilíbrio = prejuízo; até 30% acima = no limite.
+const NIVEL = { bom: "Lucrando", limite: "No limite", ruim: "Prejuízo", semdado: "Sem dados", semmargem: "Sem margem" };
+function saude(roas, gasto, pedidos, eq) {
+  if (!eq) return "semmargem";
+  if (!gasto) return "semdado";
+  if (!pedidos || roas < eq) return "ruim";
+  return roas < eq * 1.3 ? "limite" : "bom";
+}
+const badge = (n) => `<span class="hb ${n}">${NIVEL[n]}</span>`;
+function resumoLoja(c) {
+  const cs = CAMPANHAS.filter((x) => x.clientId === c.id), t = totais(cs);
+  const mg = Number(c.margem) > 0 && Number(c.margem) < 100 ? Number(c.margem) / 100 : null;
+  const eq = mg ? 1 / mg : null;
+  return { ...t, cs, mg, eq, ativas: cs.filter((x) => x.status === "ativa").length, cpaMax: mg && c.ticket ? c.ticket * mg : null, lucro: mg ? t.r * mg - t.g : null, nivel: saude(t.roas, t.g, t.p, eq) };
+}
 const stLabel = { ativa: "Ativa", pausada: "Pausada", em_analise: "Em análise" };
 const stClass = { ativa: "ativa", pausada: "pausada", em_analise: "analise" };
 const platLabel = { meta: "Meta", google: "Google" };
 const TITULOS = { painel: "Painel de resultados", campanhas: "Campanhas", copiloto: "Gestor de tráfego IA", clientes: "Lojas e contas" };
 
-let state = { tab: "painel", client: "todos", plat: "todas" };
+let state = { tab: "painel", client: "todos", plat: "todas", st: "todas", q: "", sort: { k: "gasto7", dir: -1 } };
 try { const t = localStorage.getItem("ct_tab"); if (TITULOS[t]) state.tab = t; } catch (e) {}
 const visiveis = () => CAMPANHAS.filter((c) => (state.client === "todos" || c.clientId === state.client) && (state.plat === "todas" || c.plataforma === state.plat));
 
@@ -47,6 +62,8 @@ async function api(path, body, method) {
 }
 function apply(s) {
   CLIENTES = s.clients; CAMPANHAS = s.campaigns; LOG = s.audit || []; ERROS = s.errors || {}; CONEX = s.connections || {};
+  IA = Boolean(s.ia);
+  $("#iaPill").classList.toggle("off", !IA); $("#iaPill").lastChild.textContent = IA ? "Claude" : "Claude desligado"; ATUALIZADO = s.atualizadoEm ? new Date(s.atualizadoEm) : new Date();
   if (s.usuario) { $("#uName").textContent = s.usuario; $("#uIni").textContent = s.usuario.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase(); }
   $("#logout").hidden = !s.senhaAtiva;
   $("#mockBadge").hidden = !CAMPANHAS.some((c) => c.exemplo);
@@ -73,7 +90,8 @@ function renderFilters() {
   const items = [["todos", "Todos"], ...CLIENTES.map((c) => [c.id, c.nome])];
   f.innerHTML = items.map(([id, n]) => `<button class="chip" data-c="${esc(id)}" aria-pressed="${state.client === id}">${esc(n)}</button>`).join("");
   f.hidden = state.tab === "copiloto" || state.tab === "clientes";
-  $("#ctx").textContent = state.client === "todos" ? "Todas as lojas" : cli(state.client).nome;
+  const hora = ATUALIZADO ? " · atualizado às " + ATUALIZADO.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+  $("#ctx").innerHTML = esc(state.client === "todos" ? "Todas as lojas" : cli(state.client).nome) + `<span class="hora">${esc(hora)}</span>`;
 }
 $("#filters").addEventListener("click", (e) => { const b = e.target.closest("[data-c]"); if (!b) return; state.client = b.dataset.c; render(); });
 
@@ -111,23 +129,74 @@ function alertas(list) {
     else if (c.status === "ativa" && c.gasto7 > 100 && c.pedidos === 0) out.push({ cls: "bad", txt: `<b>${esc(c.nome)}</b> gastou ${brl(c.gasto7)} sem nenhum pedido medido.`, id: c.id });
     if (c.status === "em_analise") out.push({ cls: "", txt: `<b>${esc(c.nome)}</b> está em análise pela plataforma.`, id: c.id });
   });
-  return out.slice(0, 5);
+  const lojas = new Set(list.filter((c) => c.status === "ativa").map((c) => c.clientId));
+  lojas.forEach((id) => { if (!(Number(cli(id).margem) > 0)) out.push({ cls: "", txt: `<b>${esc(cli(id).nome)}</b> não tem margem cadastrada. Sem ela não dá para saber se os anúncios dão lucro.`, loja: id }); });
+  const ordem = { bad: 0, "": 1, good: 2 };
+  return out.sort((a, b) => ordem[a.cls] - ordem[b.cls]).slice(0, 6);
+}
+function primeirosPassos() {
+  const semMargem = CLIENTES.filter((c) => !(Number(c.margem) > 0)).length;
+  const passos = [
+    [CONEX.google, "Conectar o Google Ads", "Chaves GOOGLE_ADS_* no servidor (Render → Environment)."],
+    [CONEX.meta, "Conectar a Meta (Facebook e Instagram)", "Token de usuário do sistema em META_ACCESS_TOKEN."],
+    [IA, "Ligar o gestor de tráfego IA", "Chave da Claude API em ANTHROPIC_API_KEY."],
+    [CLIENTES.length && !semMargem, "Cadastrar a margem de cada loja", semMargem ? `${semMargem} loja${semMargem > 1 ? "s" : ""} sem margem. Sem ela o app não sabe se a campanha dá lucro.` : ""],
+    [CLIENTES.some((c) => c.metaAdAccountId || c.googleCustomerId), "Ligar as contas de anúncio às lojas", "ID da conta Meta (act_...) e do cliente Google Ads em cada loja."],
+  ];
+  const feitos = passos.filter((p) => p[0]).length;
+  if (feitos === passos.length) return "";
+  let fechado = false;
+  try { fechado = localStorage.getItem("tf_setup") === String(feitos); } catch (_) {}
+  if (fechado) return `<button class="setup-min" data-act="setup">Primeiros passos · <span class="num">${feitos} de ${passos.length}</span> feitos</button>`;
+  return `<section class="card setup"><div class="hd"><b>Primeiros passos</b><span><span class="num">${feitos} de ${passos.length}</span> <button class="btn sm" data-act="setupx" data-f="${feitos}">Ocultar</button></span></div>
+    <div class="bar"><i style="width:${(feitos / passos.length) * 100}%"></i></div>
+    <ol>${passos.map(([ok, t, d]) => `<li class="${ok ? "ok" : ""}"><span class="ck">${ok ? "✓" : ""}</span><div><b>${t}</b>${!ok && d ? `<small>${esc(d)}</small>` : ""}</div>${!ok && t.startsWith("Cadastrar") || !ok && t.startsWith("Ligar as") ? `<button class="btn sm" data-tab="clientes">Abrir lojas</button>` : ""}</li>`).join("")}</ol></section>`;
+}
+function tabelaLojas() {
+  if (!CLIENTES.length) return `<div class="empty">Nenhuma loja cadastrada. <button class="btn sm pri" data-act="novaloja">Cadastrar loja</button></div>`;
+  const rows = CLIENTES.map((c) => ({ c, r: resumoLoja(c) })).sort((a, b) => b.r.g - a.r.g);
+  return `<div class="tbl-wrap desk"><table class="tbl"><thead><tr><th>Loja</th><th class="n">Investido</th><th class="n">Pedidos</th><th class="n">Custo/pedido</th><th class="n">ROAS</th><th class="n">Resultado após mídia</th><th>Saúde</th></tr></thead><tbody>
+  ${rows.map(({ c, r }) => `<tr data-c="${esc(c.id)}" tabindex="0"><td><span class="dot" style="background:${esc(c.cor || "#1DB46A")}"></span><b>${esc(c.nome)}</b><small>${r.ativas} ativa${r.ativas === 1 ? "" : "s"}</small></td>
+    <td class="n">${brl(r.g)}</td><td class="n">${nf(r.p)}</td>
+    <td class="n">${r.p ? brl2(r.cpa) : "–"}${r.cpaMax ? `<small>máx ${brl2(r.cpaMax)}</small>` : ""}</td>
+    <td class="n">${r.g ? dec(r.roas) + "×" : "–"}${r.eq ? `<small>mín ${dec(r.eq)}×</small>` : ""}</td>
+    <td class="n ${r.lucro == null ? "" : r.lucro >= 0 ? "up" : "down"}">${r.lucro == null ? "–" : brl(r.lucro)}</td>
+    <td>${badge(r.nivel)}</td></tr>`).join("")}
+  </tbody></table></div>
+  <div class="list mob">${rows.map(({ c, r }) => `<button class="client" data-c="${esc(c.id)}" style="border:0;text-align:left;width:100%"><div class="av" style="background:${esc(c.cor || "#1DB46A")}">${esc(c.nome[0])}</div><div class="info"><b>${esc(c.nome)}</b><span>${brl(r.g)} investidos · ${nf(r.p)} pedidos · ROAS ${r.g ? dec(r.roas) : "–"}${r.eq ? ` (mín ${dec(r.eq)})` : ""}</span></div><div class="r">${badge(r.nivel)}<b class="${r.lucro == null ? "" : r.lucro >= 0 ? "up" : "down"}" style="margin-top:4px">${r.lucro == null ? "–" : brl(r.lucro)}</b></div></button>`).join("")}</div>`;
+}
+function metasLoja(c) {
+  const r = resumoLoja(c);
+  if (!r.mg) return `<div class="alert"><p><b>${esc(c.nome)}</b> não tem margem cadastrada, então o app não sabe se as campanhas dão lucro.</p><button class="btn sm" data-loja="${esc(c.id)}">Cadastrar margem</button></div>`;
+  return `<div class="metas">
+    <div><span>Margem de contribuição</span><b>${dec(r.mg * 100, 0)}%</b></div>
+    <div><span>ROAS mínimo (equilíbrio)</span><b>${dec(r.eq)}×</b></div>
+    <div><span>Custo máximo por 1º pedido</span><b>${r.cpaMax ? brl2(r.cpaMax) : "cadastre o ticket"}</b></div>
+    <div><span>Saúde da semana</span>${badge(r.nivel)}</div></div>`;
 }
 function viewPainel() {
   const list = visiveis(), t = totais(list), al = alertas(list);
-  return `
-  <div class="kpis">
+  const lojas = state.client === "todos" ? CLIENTES : [cli(state.client)];
+  const comMargem = lojas.filter((c) => Number(c.margem) > 0);
+  const lucro = comMargem.length ? comMargem.reduce((a, c) => { const cs = list.filter((x) => x.clientId === c.id), tt = totais(cs); return a + tt.r * (c.margem / 100) - tt.g; }, 0) : null;
+  const eqAll = state.client !== "todos" ? equilibrio({ clientId: state.client }) : null;
+  return `${primeirosPassos()}
+  <div class="kpis k5">
     <div class="kpi" data-help="gasto"><div class="l">Investido · 7 dias ⓘ</div><div class="v">${brl(t.g)}</div><div class="d">${list.filter((c) => c.status === "ativa").length} campanhas ativas</div></div>
     <div class="kpi" data-help="receita"><div class="l">Receita atribuída ⓘ</div><div class="v">${brl(t.r)}</div><div class="d">${list.some((c) => c.receitaEstimada) ? "parte estimada pelo ticket" : "medida pela plataforma"}</div></div>
     <div class="kpi" data-help="pedidos"><div class="l">Pedidos ⓘ</div><div class="v">${nf(t.p)}</div><div class="d">Custo/pedido ${brl2(t.cpa)}</div></div>
-    <div class="kpi" data-help="roas"><div class="l">ROAS ⓘ</div><div class="v">${dec(t.roas)}×</div><div class="d">${nf(t.cl)} cliques</div></div>
+    <div class="kpi" data-help="roas"><div class="l">ROAS ⓘ</div><div class="v">${dec(t.roas)}×</div><div class="d">${eqAll ? `mínimo da loja ${dec(eqAll)}×` : `${nf(t.cl)} cliques`}</div></div>
+    <div class="kpi" data-help="lucro"><div class="l">Resultado após mídia ⓘ</div><div class="v ${lucro == null ? "" : lucro >= 0 ? "up" : "down"}">${lucro == null ? "–" : brl(lucro)}</div><div class="d">${lucro == null ? "cadastre a margem das lojas" : comMargem.length < lojas.length ? `${comMargem.length} de ${lojas.length} lojas com margem` : "margem − investimento"}</div></div>
   </div>
-  <div class="chartcard">
-    <div class="hd"><span>Gasto por dia (R$)</span><span class="legend"><span><i style="background:var(--meta)"></i>Meta</span><span><i style="background:var(--google)"></i>Google</span></span></div>
-    ${chart(list)}
+  <div class="duo">
+    <div class="chartcard">
+      <div class="hd"><span>Gasto por dia (R$)</span><span class="legend"><span><i style="background:var(--meta)"></i>Meta</span><span><i style="background:var(--google)"></i>Google</span></span></div>
+      ${chart(list)}
+    </div>
+    <section><h2 class="first">Precisa de atenção ${al.length ? `<span class="count">${al.length}</span>` : ""}</h2>
+    <div class="alerts">${al.length ? al.map((a) => `<div class="alert ${a.cls}"><span class="ico">${a.cls === "bad" ? "!" : a.cls === "good" ? "↑" : "i"}</span><p>${a.txt}</p>${a.id ? `<button class="btn sm" data-ask="O que eu faço com a campanha ${esc(camp(a.id)?.nome)}?">O que faço?</button>` : a.loja ? `<button class="btn sm" data-loja="${esc(a.loja)}">Cadastrar</button>` : ""}</div>`).join("") : `<div class="empty">Tudo dentro do esperado nos últimos 7 dias.</div>`}</div></section>
   </div>
-  <h2>Precisa de atenção</h2>
-  <div class="alerts">${al.length ? al.map((a) => `<div class="alert ${a.cls}"><p>${a.txt}</p>${a.id ? `<button class="btn sm" data-ask="O que eu faço com a campanha ${esc(camp(a.id)?.nome)}?">O que faço?</button>` : ""}</div>`).join("") : `<div class="empty">Nada fora do normal.</div>`}</div>
+  ${state.client === "todos" ? `<h2>Saúde das lojas</h2>${tabelaLojas()}` : `<h2>Metas da loja</h2>${metasLoja(cli(state.client))}`}
   <h2>Ações rápidas</h2>
   <div class="row"><button class="btn pri" data-act="nova">Nova campanha</button><button class="btn" data-ask="Faz um diagnóstico da semana e me diz o que fazer hoje">Diagnóstico da semana</button><button class="btn" data-act="relatorio">Relatório do cliente</button></div>
   ${LOG.length ? `<h2>Últimas alterações</h2><div class="list">${LOG.slice(0, 6).map((l) => `<div class="alert ${l.resultado === "falhou" ? "bad" : "good"}"><p>${esc(l.resultado === "falhou" ? "Falhou: " + l.detalhe : l.resultado)}<br><small style="color:var(--muted)">${esc(l.quem || "")} · ${esc(l.origem || "")} · ${new Date(l.at).toLocaleString("pt-BR")}</small></p></div>`).join("")}</div>` : ""}`;
@@ -138,26 +207,57 @@ function campCard(c) {
   const k = m(c);
   return `
   <button class="camp" data-open="${esc(c.id)}">
-    <span class="n">${esc(c.nome)}</span><span class="st ${stClass[c.status]}">${stLabel[c.status]}</span>
+    <span class="n">${esc(c.nome)}</span><span class="row" style="gap:6px;flex-wrap:nowrap">${c.status === "ativa" ? badge(saudeCamp(c)) : ""}<span class="st ${stClass[c.status]}">${stLabel[c.status]}</span></span>
     <span class="meta"><span class="tag ${c.plataforma}">${platLabel[c.plataforma]}</span>${esc(c.canal)} · ${esc(cli(c.clientId).nome)} · <span class="num">${c.orcamento != null ? brl(c.orcamento) + "/dia" : "orçamento no conjunto"}</span></span>
     <span class="stats"><div><span>Gasto 7d</span><b>${brl(c.gasto7)}</b></div><div><span>Pedidos</span><b>${nf(c.pedidos)}</b></div><div><span>Custo/ped.</span><b>${c.pedidos ? brl2(k.cpa) : "–"}</b></div><div><span>ROAS</span><b>${c.gasto7 ? dec(k.roas) : "–"}</b></div></span>
   </button>`;
 }
-function viewCampanhas() {
-  const list = visiveis();
-  return `<div class="row" style="justify-content:space-between;align-items:center">
-    <div class="row">${["todas", "meta", "google"].map((p) => `<button class="chip" data-plat="${p}" aria-pressed="${state.plat === p}">${p === "todas" ? "Todas" : platLabel[p]}</button>`).join("")}</div>
-    <button class="btn pri sm" data-act="nova">+ Nova</button></div>
-  <h2>${list.length} campanha${list.length === 1 ? "" : "s"}</h2>
-  <div class="list">${list.map(campCard).join("") || `<div class="empty">Nenhuma campanha neste filtro.</div>`}</div>`;
+const COLS = [
+  ["nome", "Campanha"], ["loja", "Loja"], ["status", "Status"], ["orcamento", "Orçamento/dia", 1], ["gasto7", "Gasto 7d", 1],
+  ["pedidos", "Pedidos", 1], ["cpa", "Custo/pedido", 1], ["roas", "ROAS", 1], ["saude", "Saúde"],
+];
+const sortVal = (c, k) => ({ loja: cli(c.clientId).nome, cpa: m(c).cpa || Infinity, roas: m(c).roas, saude: ["ruim", "limite", "semmargem", "semdado", "bom"].indexOf(saudeCamp(c)) }[k] ?? c[k] ?? "");
+const saudeCamp = (c) => (c.status !== "ativa" && !c.gasto7 ? "semdado" : saude(m(c).roas, c.gasto7, c.pedidos, equilibrio(c)));
+function campFiltradas() {
+  const q = state.q.trim().toLowerCase(), { k, dir } = state.sort;
+  return visiveis()
+    .filter((c) => (state.st === "todas" || c.status === state.st) && (!q || (c.nome + " " + cli(c.clientId).nome + " " + c.canal).toLowerCase().includes(q)))
+    .sort((a, b) => { const x = sortVal(a, k), y = sortVal(b, k); return (typeof x === "string" ? x.localeCompare(y, "pt-BR") : x - y) * dir; });
 }
+function campTabela(list) {
+  if (!list.length) return `<div class="empty">Nenhuma campanha com esses filtros.</div>`;
+  const { k, dir } = state.sort;
+  return `<div class="tbl-wrap desk"><table class="tbl"><thead><tr>${COLS.map(([key, t, n]) => `<th class="${n ? "n" : ""}"><button data-sort="${key}" aria-sort="${k === key ? (dir > 0 ? "ascending" : "descending") : "none"}">${t}${k === key ? (dir > 0 ? " ↑" : " ↓") : ""}</button></th>`).join("")}</tr></thead><tbody>
+  ${list.map((c) => { const x = m(c), eq = equilibrio(c); return `<tr data-open="${esc(c.id)}" tabindex="0">
+    <td><b>${esc(c.nome)}</b><small><span class="tag ${c.plataforma}">${platLabel[c.plataforma]}</span> ${esc(c.canal)}</small></td>
+    <td><span class="dot" style="background:${esc(cli(c.clientId).cor || "#1DB46A")}"></span>${esc(cli(c.clientId).nome)}</td>
+    <td><span class="st ${stClass[c.status]}">${stLabel[c.status]}</span></td>
+    <td class="n">${c.orcamento != null ? brl(c.orcamento) : "no conjunto"}</td>
+    <td class="n">${brl(c.gasto7)}</td><td class="n">${nf(c.pedidos)}</td>
+    <td class="n">${c.pedidos ? brl2(x.cpa) : "–"}</td>
+    <td class="n">${c.gasto7 ? dec(x.roas) + "×" : "–"}${eq ? `<small>mín ${dec(eq)}×</small>` : ""}</td>
+    <td>${badge(saudeCamp(c))}</td></tr>`; }).join("")}
+  </tbody></table></div>
+  <div class="list mob">${list.map(campCard).join("")}</div>`;
+}
+function viewCampanhas() {
+  const base = visiveis(), cnt = (st) => base.filter((c) => st === "todas" || c.status === st).length;
+  return `<div class="toolbar">
+    <input id="busca" type="search" placeholder="Buscar campanha ou loja" value="${esc(state.q)}" aria-label="Buscar campanha">
+    <div class="row">${["todas", "meta", "google"].map((p) => `<button class="chip" data-plat="${p}" aria-pressed="${state.plat === p}">${p === "todas" ? "Meta + Google" : platLabel[p]}</button>`).join("")}</div>
+    <div class="row">${[["todas", "Todas"], ["ativa", "Ativas"], ["pausada", "Pausadas"], ["em_analise", "Em análise"]].map(([v, t]) => `<button class="chip" data-st="${v}" aria-pressed="${state.st === v}">${t} <span class="num">${cnt(v)}</span></button>`).join("")}</div>
+    <button class="btn pri sm" data-act="nova" style="margin-left:auto">+ Nova campanha</button></div>
+  <div id="campList">${campTabela(campFiltradas())}</div>`;
+}
+$("#view").addEventListener("input", (e) => { if (e.target.id === "busca") { state.q = e.target.value; $("#campList").innerHTML = campTabela(campFiltradas()); } });
+$("#view").addEventListener("keydown", (e) => { const tr = e.target.closest("tr[data-open],tr[data-c]"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); tr.click(); } });
 
 // ---------- Lojas e contas ----------
 function viewClientes() {
   return `<div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Restaurantes atendidos</h2><button class="btn pri sm" data-loja="">+ Loja</button></div>
   <div class="clients" style="margin-top:10px">${CLIENTES.map((c) => {
-    const cs = CAMPANHAS.filter((x) => x.clientId === c.id), t = totais(cs), n = cs.filter((x) => x.status === "ativa").length;
-    return `<button class="client" data-loja="${esc(c.id)}" style="border:0;text-align:left;width:100%"><div class="av" style="background:${esc(c.cor || "#1DB46A")}">${esc(c.nome[0])}</div><div class="info"><b>${esc(c.nome)}</b><span>${esc(c.cidade)} · ${n} ativa${n === 1 ? "" : "s"} · ${c.metaAdAccountId ? "Meta ✓" : "sem Meta"} · ${c.googleCustomerId ? "Google ✓" : "sem Google"}</span></div><div class="r"><b>${brl(t.g)}</b>ROAS ${dec(t.roas)}</div></button>`;
+    const r = resumoLoja(c), n = r.ativas;
+    return `<button class="client" data-loja="${esc(c.id)}" style="border:0;text-align:left;width:100%"><div class="av" style="background:${esc(c.cor || "#1DB46A")}">${esc(c.nome[0])}</div><div class="info"><b>${esc(c.nome)} ${badge(r.nivel)}</b><span>${esc(c.cidade)} · ${n} ativa${n === 1 ? "" : "s"} · ${r.mg ? `margem ${dec(r.mg * 100, 0)}% · ROAS mín ${dec(r.eq)}×` : "sem margem"} · ${c.metaAdAccountId ? "Meta ✓" : "sem Meta"} · ${c.googleCustomerId ? "Google ✓" : "sem Google"}</span></div><div class="r"><b>${brl(r.g)}</b>ROAS ${dec(r.roas)}</div></button>`;
   }).join("")}</div>
   <h2>Contas conectadas</h2>
   <div class="list">
@@ -297,6 +397,7 @@ function relatorio() {
 }
 
 const AJUDA = {
+  lucro: ["Resultado após mídia", "Quanto sobrou para a loja depois de pagar os anúncios: receita × margem de contribuição − investimento. Positivo quer dizer que o tráfego deu lucro na semana. Só aparece para lojas com margem cadastrada."],
   gasto: ["Investido", "Quanto saiu do cartão em anúncios nos últimos 7 dias, somando Meta e Google."],
   receita: ["Receita atribuída", "Valor dos pedidos que vieram de quem clicou num anúncio. Quando a plataforma não mede vendas, o TrafgFood estima com pedidos × ticket médio da loja. Confira com o caixa."],
   pedidos: ["Pedidos e custo por pedido", "Quantos pedidos os anúncios trouxeram. O custo por pedido é o gasto dividido pelos pedidos; para delivery, o teto é o CPA máximo da loja: ticket médio × margem de contribuição, mais a recompra esperada."],
@@ -382,6 +483,11 @@ $("#drawerScrim").addEventListener("click", () => drawer(false));
 
 function go(tab) { state.tab = tab; try { localStorage.setItem("ct_tab", tab); } catch (_) {} render(); window.scrollTo(0, 0); }
 function handleClick(e) {
+  const tr = e.target.closest("tr[data-open],tr[data-c]");
+  if (tr && !e.target.closest("button")) {
+    if (tr.dataset.open) return abrirCampanha(tr.dataset.open);
+    state.client = tr.dataset.c; return render();
+  }
   const b = e.target.closest("button,[data-help]");
   if (!b) return;
   if (b.closest("#side")) drawer(false);
@@ -389,12 +495,16 @@ function handleClick(e) {
   if (d.tab) return go(d.tab);
   if (d.open) return abrirCampanha(d.open);
   if (d.plat) { state.plat = d.plat; return render(); }
+  if (d.st) { state.st = d.st; return render(); }
+  if (d.c && b.closest("#view")) { state.client = d.c; return render(); }
+  if (d.sort) { state.sort = state.sort.k === d.sort ? { k: d.sort, dir: -state.sort.dir } : { k: d.sort, dir: ["nome", "loja", "status"].includes(d.sort) ? 1 : -1 }; return render(); }
   if (d.help) return ajuda(d.help);
   if (d.ask) return perguntar(d.ask);
   if (d.say) { $("#chatInput").value = d.say; return send(); }
   if (d.loja !== undefined) return editarLoja(d.loja);
   if (d.act === "nova") return novaCampanha();
   if (d.act === "novaloja") return editarLoja("");
+  if (d.act === "setup" || d.act === "setupx") { try { d.act === "setup" ? localStorage.removeItem("tf_setup") : localStorage.setItem("tf_setup", d.f); } catch (_) {} return render(); }
   if (d.act === "relatorio") return relatorio();
 }
 for (const sel of ["#side", "#view", "#tabs"]) $(sel).addEventListener("click", handleClick);
