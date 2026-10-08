@@ -31,9 +31,10 @@ const digits = (id) => String(id).replace(/\D/g, "");
 async function call(customerId, pathname, body) {
   const headers = {
     Authorization: `Bearer ${await accessToken()}`,
-    "developer-token": process.env.GOOGLE_ADS_DEVELOPER_TOKEN,
     "Content-Type": "application/json",
   };
+  // O Google vem flexibilizando o developer token; envia só quando estiver configurado.
+  if (process.env.GOOGLE_ADS_DEVELOPER_TOKEN) headers["developer-token"] = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
   if (process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) headers["login-customer-id"] = digits(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID);
   const res = await fetch(`${BASE}/customers/${digits(customerId)}/${pathname}`, { method: "POST", headers, body: JSON.stringify(body) });
   const json = await res.json().catch(() => ({}));
