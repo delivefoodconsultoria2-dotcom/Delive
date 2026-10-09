@@ -171,6 +171,17 @@ h2 .count{font:600 12px var(--f-data);background:var(--sunk);color:var(--muted);
 .chip .num{opacity:.7;margin-left:3px;font-size:12px}
 .desk{display:none}
 .cfgs{display:grid;gap:12px}
+.pend{margin-bottom:12px;border-color:var(--warn);display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:8px}.prow>div{flex:1;min-width:0}.prow small{display:block;color:var(--muted);font-size:12px}
+.dgs{display:grid;gap:10px}
+.dg{background:var(--surface);border-radius:14px;padding:12px 14px;border-left:4px solid var(--warn);display:flex;flex-direction:column;gap:6px}
+.dg.bad{border-left-color:var(--bad)}.dg.good{border-left-color:var(--good)}
+.dgh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.dgh small{color:var(--muted);font-size:12px}
+.dg .ico{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--f-data);background:var(--warn-soft);color:var(--warn)}
+.dg.bad .ico{background:var(--bad-soft);color:var(--bad)}.dg.good .ico{background:var(--good-soft);color:var(--good)}
+.dg p{margin:0;font-size:14px}.dg ul{margin:0;padding-left:18px;font-size:13px}.dg .acoes li{margin:2px 0}
+.dg details summary,.rot summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.rot{margin-top:12px}.rot p{margin:6px 0 0;font-size:13px;color:var(--muted)}.rot b{color:var(--fg)}
 .oauth{display:flex;flex-direction:column;gap:8px;background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:12px;font-size:13px;color:var(--muted)}.oauth b{color:var(--fg);font-size:14px}
 .cfg{display:flex;flex-direction:column;gap:10px}
 .cfh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.cfh b{font-family:var(--f-display);font-size:16px}
@@ -245,6 +256,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
   .desk{display:block} .mob{display:none!important}
   .metas{grid-template-columns:repeat(4,1fr)}
   .cfgs{grid-template-columns:1fr 1fr;align-items:start}
+  .dgs{grid-template-columns:1fr 1fr;align-items:start}
   .list{display:grid;grid-template-columns:1fr 1fr}
   .clients{grid-template-columns:1fr 1fr}
   .composer{left:264px;bottom:0}
@@ -268,7 +280,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
   <nav class="snav" id="snav">
     <button data-tab="painel"><svg viewBox="0 0 24 24"><path d="M4 19V10M10 19V5M16 19v-6M22 19H2"/></svg>Painel de resultados</button>
     <button data-tab="campanhas"><svg viewBox="0 0 24 24"><path d="M3 11l15-6v14L3 13zM7 13v5"/></svg>Campanhas</button>
-    <button data-tab="copiloto"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3"/></svg>Gestor de tráfego IA</button>
+    <button data-tab="copiloto"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3"/></svg>Gestor de tráfego</button>
     <button data-tab="clientes"><svg viewBox="0 0 24 24"><path d="M3 10h18l-2-5H5zM5 10v9h14v-9M9 19v-5h6v5"/></svg>Lojas e contas</button>
     <button data-tab="config"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Configurações</button>
   </nav>
@@ -316,7 +328,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 <nav class="tabs"><div class="in" id="tabs">
   <button data-tab="painel" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V10M10 19V5M16 19v-6M22 19H2"/></svg>Painel</button>
   <button data-tab="campanhas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11l15-6v14L3 13zM7 13v5"/></svg>Campanhas</button>
-  <button data-tab="copiloto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><circle cx="12" cy="12" r="3"/></svg>IA</button>
+  <button data-tab="copiloto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><circle cx="12" cy="12" r="3"/></svg>Gestor</button>
   <button data-tab="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10h18l-2-5H5zM5 10v9h14v-9M9 19v-5h6v5"/></svg>Lojas</button>
   <button data-tab="config"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Ajustes</button>
 </div></nav>

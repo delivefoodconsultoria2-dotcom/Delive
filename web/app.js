@@ -8,7 +8,7 @@ const nf = (v) => Number(v || 0).toLocaleString("pt-BR");
 const dec = (v, n = 1) => Number(v).toFixed(n).replace(".", ",");
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
-let CLIENTES = [], CAMPANHAS = [], LOG = [], ERROS = {}, CONEX = {}, IA = false, ATUALIZADO = null, DESKTOP = false, CONFIG = null;
+let CLIENTES = [], CAMPANHAS = [], LOG = [], ERROS = {}, CONEX = {}, IA = false, ATUALIZADO = null, DESKTOP = false, CONFIG = null, PENDENTES = [], DIAG = null, CLAUDEAPP = null;
 const cli = (id) => CLIENTES.find((c) => c.id === id) || { nome: id, cor: "#555" };
 const camp = (id) => CAMPANHAS.find((c) => c.id === id);
 const m = (c) => ({
@@ -37,7 +37,7 @@ function resumoLoja(c) {
 const stLabel = { ativa: "Ativa", pausada: "Pausada", em_analise: "Em análise" };
 const stClass = { ativa: "ativa", pausada: "pausada", em_analise: "analise" };
 const platLabel = { meta: "Meta", google: "Google" };
-const TITULOS = { painel: "Painel de resultados", campanhas: "Campanhas", copiloto: "Gestor de tráfego IA", clientes: "Lojas e contas", config: "Configurações" };
+const TITULOS = { painel: "Painel de resultados", campanhas: "Campanhas", copiloto: "Gestor de tráfego", clientes: "Lojas e contas", config: "Configurações" };
 
 let state = { tab: "painel", client: "todos", plat: "todas", st: "todas", q: "", sort: { k: "gasto7", dir: -1 } };
 try { const t = localStorage.getItem("ct_tab"); if (TITULOS[t]) state.tab = t; } catch (e) {}
@@ -62,7 +62,7 @@ async function api(path, body, method) {
 }
 function apply(s) {
   CLIENTES = s.clients; CAMPANHAS = s.campaigns; LOG = s.audit || []; ERROS = s.errors || {}; CONEX = s.connections || {};
-  IA = Boolean(s.ia); DESKTOP = Boolean(s.desktop);
+  IA = Boolean(s.ia); DESKTOP = Boolean(s.desktop); PENDENTES = s.pending || []; DIAG = null;
   $("#iaPill").classList.toggle("off", !IA); $("#iaPill").lastChild.textContent = IA ? "Claude" : "Claude desligado"; ATUALIZADO = s.atualizadoEm ? new Date(s.atualizadoEm) : new Date();
   if (s.usuario) { $("#uName").textContent = s.usuario; $("#uIni").textContent = s.usuario.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase(); }
   $("#logout").hidden = !s.senhaAtiva;
@@ -134,12 +134,18 @@ function alertas(list) {
   const ordem = { bad: 0, "": 1, good: 2 };
   return out.sort((a, b) => ordem[a.cls] - ordem[b.cls]).slice(0, 6);
 }
+// Propostas criadas pelo gestor (no app ou no app do Claude) esperando o "Confirmar".
+function pendentesHtml() {
+  if (!PENDENTES.length) return "";
+  return `<section class="card pend"><div class="cfh"><b>Aguardando sua confirmação</b><span class="stx warn">${PENDENTES.length}</span></div>
+    ${PENDENTES.map((a) => `<div class="prow"><div><b>${esc(a.resumo?.titulo || a.tipo)}</b><small>${esc(a.origem || "")}${a.dados?.motivo ? " · " + esc(a.dados.motivo) : ""}${a.resumo?.custo ? " · " + esc(a.resumo.custo) : ""}</small></div><button class="btn sm pri" data-pend="${esc(a.id)}">Revisar</button></div>`).join("")}</section>`;
+}
 function primeirosPassos() {
   const semMargem = CLIENTES.filter((c) => !(Number(c.margem) > 0)).length;
   const passos = [
     [CONEX.google, "Conectar o Google Ads", "Client ID, Client Secret e refresh token em Configurações."],
     [CONEX.meta, "Conectar a Meta (Facebook e Instagram)", "Token de usuário do sistema em Configurações."],
-    [IA, "Ligar o gestor de tráfego IA", "Chave da Claude API em Configurações."],
+    [IA || CLAUDEAPP?.ligado, "Ligar o gestor de tráfego IA", DESKTOP ? "Conecte ao app do Claude em Configurações (usa a sua assinatura)." : "Chave da Claude API em Configurações."],
     [CLIENTES.length && !semMargem, "Cadastrar a margem de cada loja", semMargem ? `${semMargem} loja${semMargem > 1 ? "s" : ""} sem margem. Sem ela o app não sabe se a campanha dá lucro.` : ""],
     [CLIENTES.some((c) => c.metaAdAccountId || c.googleCustomerId), "Ligar as contas de anúncio às lojas", "ID da conta Meta (act_...) e do cliente Google Ads em cada loja."],
   ];
@@ -180,7 +186,7 @@ function viewPainel() {
   const comMargem = lojas.filter((c) => Number(c.margem) > 0);
   const lucro = comMargem.length ? comMargem.reduce((a, c) => { const cs = list.filter((x) => x.clientId === c.id), tt = totais(cs); return a + tt.r * (c.margem / 100) - tt.g; }, 0) : null;
   const eqAll = state.client !== "todos" ? equilibrio({ clientId: state.client }) : null;
-  return `${primeirosPassos()}
+  return `${pendentesHtml()}${primeirosPassos()}
   <div class="kpis k5">
     <div class="kpi" data-help="gasto"><div class="l">Investido · 7 dias ⓘ</div><div class="v">${brl(t.g)}</div><div class="d">${list.filter((c) => c.status === "ativa").length} campanhas ativas</div></div>
     <div class="kpi" data-help="receita"><div class="l">Receita atribuída ⓘ</div><div class="v">${brl(t.r)}</div><div class="d">${list.some((c) => c.receitaEstimada) ? "parte estimada pelo ticket" : "medida pela plataforma"}</div></div>
@@ -306,6 +312,17 @@ function editarLoja(id) {
 
 
 // ---------- Configurações ----------
+async function carregarClaudeApp() {
+  try { CLAUDEAPP = await api("/api/claude-app"); render(); } catch (_) { CLAUDEAPP = { instalado: false, ligado: false }; }
+}
+async function conectarClaudeApp() {
+  try {
+    const r = await api("/api/claude-app/conectar", {});
+    CLAUDEAPP = r;
+    sheet(`<h3>TrafgFood conectado ao app do Claude</h3><p style="margin:0">Falta só isto:</p><ol style="margin:0;padding-left:20px;line-height:1.7"><li>Feche o app do Claude por completo: clique com o botão direito no ícone do Claude perto do relógio e escolha <b>Sair</b>.</li><li>Abra o app do Claude de novo.</li><li>Escreva: <i>"Use o TrafgFood e me diga o que fazer hoje nas campanhas."</i></li><li>Quando o Claude pedir permissão para usar o TrafgFood, clique em <b>Permitir</b>.</li></ol><p class="sub" style="margin:0">O que o Claude sugerir aparece no Painel, em "Aguardando sua confirmação".</p><div class="row"><button class="btn pri" id="okc">Entendi</button></div>`, (s) => { s.querySelector("#okc").onclick = closeSheet; });
+    render();
+  } catch (e) { toast(e.message); }
+}
 async function loadConfig() {
   try { CONFIG = await api("/api/config"); } catch (e) { CONFIG = []; toast(e.message); }
   if (state.tab === "config") render();
@@ -326,6 +343,7 @@ function campoHtml(c) {
 }
 function viewConfig() {
   if (!CONFIG) { loadConfig(); return `<div class="empty">Carregando...</div>`; }
+  if (!CLAUDEAPP && DESKTOP) carregarClaudeApp();
   return `<p class="sub" style="margin:0 0 12px">As chaves ficam guardadas só ${DESKTOP ? "neste computador" : "no servidor do TrafgFood"} e nunca aparecem de novo na tela. Para trocar um segredo, cole o novo por cima.</p>
   <div class="cfgs">${CONFIG.map((g) => { const [cls, txt] = statusGrupo(g); return `<section class="card cfg" data-grupo="${g.id}">
     <div class="cfh"><b>${esc(g.titulo)}</b><span class="stx ${cls}">${txt}</span></div>
@@ -338,6 +356,9 @@ function viewConfig() {
       <a class="btn sm pri" href="/api/google/conectar" style="align-self:flex-start;text-decoration:none">Conectar com Google</a></div>` : ""}
     <div class="row"><button class="btn pri sm" data-salvar="${g.id}">Salvar</button>${g.id !== "acesso" ? `<button class="btn sm" data-testar="${g.id}">Testar conexão</button>` : ""}</div>
   </section>`; }).join("")}</div>
+  ${DESKTOP ? `<section class="card cfg" style="margin-top:12px"><div class="cfh"><b>App do Claude (sua assinatura)</b><span class="stx ${CLAUDEAPP?.ligado ? "ok" : "off"}">${CLAUDEAPP?.ligado ? "Conectado" : CLAUDEAPP?.instalado ? "Não conectado" : "App do Claude não encontrado"}</span></div>
+    <p class="sub" style="margin:0">Usa a assinatura do Claude que você já paga, sem chave de API. O app do Claude lê as campanhas do TrafgFood e deixa as mudanças aqui para você confirmar. Precisa do app do Claude para computador (claude.ai/download) instalado e com a sua conta.</p>
+    <div class="row"><button class="btn pri sm" data-act="claudeapp">${CLAUDEAPP?.ligado ? "Conectar de novo" : "Conectar ao app do Claude"}</button></div></section>` : ""}
   ${DESKTOP ? `<section class="card cfg" style="margin-top:12px"><div class="cfh"><b>Programa</b></div><p class="sub" style="margin:0">O TrafgFood fica ligado em segundo plano. Para abrir de novo, use o ícone TrafgFood na área de trabalho ou no menu Iniciar.</p><div class="row"><button class="btn dng sm" data-act="desligar">Desligar o TrafgFood</button></div></section>` : ""}`;
 }
 async function salvarGrupo(id) {
@@ -463,8 +484,23 @@ function ajuda(k) { const [t, d] = AJUDA[k]; sheet(`<h3>${t}</h3><p style="margi
 let turns = [], busy = false;
 const chatLog = [{ r: "sys", t: "Sou seu gestor de tráfego. Me diga o que quer, por voz ou texto, que eu recomendo a estratégia e explico em linguagem simples. Tudo que mexe em dinheiro chega para você confirmar antes." }];
 function viewCopiloto() {
-  return `<div class="chat" id="chat">${chatLog.map((x) => `<div class="msg ${x.r}">${esc(x.t)}</div>`).join("")}
-  ${chatLog.length < 2 ? `<div class="suggest">${["O que eu devo fazer hoje nas campanhas?", "Qual campanha está dando prejuízo?", "Monta um plano de R$ 1.500 por mês para uma loja nova", "Me explica o que é ROAS"].map((s) => `<button class="chip" data-say="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}</div>`;
+  if (!DIAG) { api("/api/diagnostico").then((d) => { DIAG = d; if (state.tab === "copiloto") render(); }).catch((e) => toast(e.message)); }
+  const cls = { grave: "bad", atencao: "", oportunidade: "good" }, ic = { grave: "!", atencao: "i", oportunidade: "↑" };
+  const diag = !DIAG ? `<div class="empty">Analisando as campanhas...</div>` : DIAG.itens.length ? DIAG.itens.map((d) => `<div class="dg ${cls[d.nivel]}">
+      <div class="dgh"><span class="ico">${ic[d.nivel]}</span><b>${esc(d.titulo)}</b>${d.loja ? `<small>${esc(d.loja)}</small>` : ""}</div>
+      <p>${esc(d.porque)}</p>
+      ${d.verificar?.length ? `<details><summary>O que verificar</summary><ul>${d.verificar.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details>` : ""}
+      <ul class="acoes">${d.acoes.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+      <div class="row">${d.proposta ? `<button class="btn sm ${d.nivel === "oportunidade" ? "pri" : "dng"}" data-diag="${esc(JSON.stringify({ c: d.campanhaId, ...d.proposta }))}">${esc(d.proposta.rotulo)}</button>` : ""}${d.lojaId && !d.campanhaId ? `<button class="btn sm" data-loja="${esc(d.lojaId)}">Abrir loja</button>` : ""}${d.campanhaId ? `<button class="btn sm" data-open="${esc(d.campanhaId)}">Ver campanha</button>` : ""}</div>
+    </div>`).join("") : `<div class="empty">Nenhum problema pelas regras da base. Siga a rotina abaixo.</div>`;
+  const rot = DIAG?.rotina ? `<details class="card rot"><summary><b>Rotina de otimização</b></summary>${[["diaria", "Todo dia"], ["semanal", "Toda semana"], ["mensal", "Todo mês"]].map(([k, t]) => `<p><b>${t}:</b> ${esc(DIAG.rotina[k].join(", "))}.</p>`).join("")}</details>` : "";
+  const conversa = IA ? `<h2>Conversar com o gestor IA</h2><div class="chat" id="chat">${chatLog.map((x) => `<div class="msg ${x.r}">${esc(x.t)}</div>`).join("")}
+    ${chatLog.length < 2 ? `<div class="suggest">${["O que eu devo fazer hoje nas campanhas?", "Qual campanha está dando prejuízo?", "Monta um plano de R$ 1.500 por mês para uma loja nova", "Me explica o que é ROAS"].map((x) => `<button class="chip" data-say="${esc(x)}">${esc(x)}</button>`).join("")}</div>` : ""}</div>`
+    : `<section class="card cfg" style="margin-top:16px"><div class="cfh"><b>Conversar com o gestor IA</b>${CLAUDEAPP?.ligado ? `<span class="stx ok">Pelo app do Claude</span>` : ""}</div>
+      ${DESKTOP ? `<p class="sub" style="margin:0">Converse pelo app do Claude, com a sua assinatura, sem custo extra. Ele lê as campanhas do TrafgFood, segue a base da Delivefood e deixa as mudanças aqui para você confirmar.</p>
+      ${CLAUDEAPP?.ligado ? `<p class="sub" style="margin:0">Abra o app do Claude e escreva, por exemplo: <i>"Use o TrafgFood e me diga o que fazer hoje nas campanhas."</i></p>` : `<div class="row"><button class="btn pri sm" data-act="claudeapp">Conectar ao app do Claude</button></div>`}`
+      : `<p class="sub" style="margin:0">Para conversar por texto e voz aqui, coloque a chave da Claude API em Configurações.</p>`}</section>`;
+  return `<h2 class="first" style="margin-top:4px">Diagnóstico da semana <span class="sub" style="font-weight:400">· regras da Base Delivefood, sem IA</span></h2><div class="dgs">${diag}</div>${rot}${conversa}`;
 }
 function pushMsg(r, t) {
   chatLog.push({ r, t });
@@ -559,6 +595,9 @@ function handleClick(e) {
   if (d.act === "nova") return novaCampanha();
   if (d.act === "novaloja") return editarLoja("");
   if (d.salvar) return salvarGrupo(d.salvar);
+  if (d.act === "claudeapp") return conectarClaudeApp();
+  if (d.pend) { const a = PENDENTES.find((x) => x.id === d.pend); return a && confirmar(a).then(() => load()); }
+  if (d.diag) { const p = JSON.parse(d.diag); return propor({ tipo: p.tipo, campanhaId: p.c, dados: { orcamento: p.orcamento, motivo: "Diagnóstico automático" } }).then(() => { DIAG = null; }); }
   if (d.copiar) { const i = $("#" + d.copiar); return navigator.clipboard.writeText(i.value).then(() => toast("Copiado")).catch(() => { i.select(); }); }
   if (d.testar) return testarGrupo(d.testar);
   if (d.limpar) return api("/api/config", { [d.limpar]: null }).then((c) => { CONFIG = c; toast("Apagado"); load(true); }).catch((e) => toast(e.message));
@@ -573,7 +612,7 @@ function render() {
   $("#view").innerHTML = { painel: viewPainel, campanhas: viewCampanhas, copiloto: viewCopiloto, clientes: viewClientes, config: viewConfig }[state.tab]();
   $("#pageTitle").textContent = TITULOS[state.tab];
   document.querySelectorAll("#tabs button,#snav button").forEach((b) => b.setAttribute("aria-current", b.dataset.tab === state.tab ? "page" : "false"));
-  $("#composer").hidden = state.tab !== "copiloto";
+  $("#composer").hidden = state.tab !== "copiloto" || !IA;
   if (state.tab === "copiloto") $("#chat").lastElementChild?.scrollIntoView({ block: "end" });
 }
 
@@ -589,4 +628,6 @@ if (location.hash === "#config") { state.tab = "config"; history.replaceState(nu
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
 render();
-load();
+load().then(() => { if (DESKTOP) carregarClaudeApp(); });
+// Atualiza sozinho para mostrar propostas que chegam do app do Claude.
+setInterval(() => { if (!document.hidden && !$("#sheetRoot").innerHTML && state.tab !== "config") load(); }, 20000);

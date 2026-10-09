@@ -7,6 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { campaigns, propose } from "./actions.js";
 import { store } from "./store.js";
 import { ROOT } from "./paths.js";
+import { diagnosticar } from "./diagnostico.js";
 
 // Recriado quando a chave muda pela tela Configurações.
 let client, chaveAtual;
@@ -22,7 +23,7 @@ const EFFORT = process.env.CLAUDE_EFFORT || "medium";
 const BASE = JSON.parse(fs.readFileSync(path.join(ROOT, "server", "knowledge", "base-trafego-delivery.json"), "utf8"));
 const { dados_para_treinamento_supervisionado: _treino, ...BASE_PROMPT } = BASE;
 
-const PLAYBOOK = `${BASE.configuracao_do_especialista.prompt_base}
+export const PLAYBOOK = `${BASE.configuracao_do_especialista.prompt_base}
 
 Você trabalha dentro do TrafgFood, o sistema de tráfego pago da Delivefood Consultoria, que atende vários restaurantes. Quem fala com você pode não saber tráfego pago: explique sem jargão (se usar um termo como ROAS ou CPA, explique em meia frase) e termine sempre com a próxima ação concreta e a métrica que vai decidir se ela continua, muda ou para.
 
@@ -40,7 +41,12 @@ Como agir no sistema:
 BASE DE CONHECIMENTO DELIVEFOOD (dados de referência, versão ${BASE.metadata.versao}):
 ${JSON.stringify(BASE_PROMPT)}`;
 
-const TOOLS = [
+export const TOOLS = [
+  {
+    name: "diagnostico_automatico",
+    description: "Diagnóstico da semana pelas regras da Base Delivefood (prejuízo, sem pedidos, CTR baixo, CPM alto, oportunidades de escala), com o que verificar e o que fazer. Bom ponto de partida antes de analisar.",
+    input_schema: { type: "object", properties: {} },
+  },
   {
     name: "buscar_campanhas",
     description: "Lista campanhas com números dos últimos 7 dias (gasto, pedidos, custo por pedido, ROAS, CTR, orçamento diário, status). Filtre por loja ou plataforma quando souber.",
@@ -123,8 +129,12 @@ function metasDaLoja(c) {
   return out;
 }
 
-async function runTool(name, input, proposals) {
+export async function runTool(name, input, proposals = [], origem = "gestor IA") {
   switch (name) {
+    case "diagnostico_automatico": {
+      const { data } = await campaigns();
+      return diagnosticar(data, store.get().clients).itens;
+    }
     case "buscar_campanhas": {
       const { data } = await campaigns();
       return data
@@ -135,7 +145,7 @@ async function runTool(name, input, proposals) {
     case "propor_reativar":
     case "propor_orcamento": {
       const tipo = { propor_pausa: "pausar", propor_reativar: "ativar", propor_orcamento: "orcamento" }[name];
-      const a = await propose({ tipo, campanhaId: String(input.campanha_id), dados: { orcamento: input.orcamento_dia, motivo: input.motivo }, origem: "gestor IA" });
+      const a = await propose({ tipo, campanhaId: String(input.campanha_id), dados: { orcamento: input.orcamento_dia, motivo: input.motivo }, origem });
       proposals.push(a);
       return { proposta: a.id, situacao: "aguardando confirmação da pessoa na tela" };
     }
@@ -154,7 +164,7 @@ async function runTool(name, input, proposals) {
           publico: String(input.publico || ""),
           texto: String(input.texto_anuncio || ""),
         },
-        origem: "gestor IA",
+        origem,
       });
       proposals.push(a);
       return { proposta: a.id, situacao: "aguardando confirmação da pessoa na tela" };

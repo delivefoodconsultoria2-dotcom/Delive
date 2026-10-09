@@ -1,14 +1,18 @@
 import express from "express";
 import crypto from "node:crypto";
 import path from "node:path";
+import fs from "node:fs";
 import { store } from "./store.js";
 import { seedIfEmpty } from "./providers/mock.js";
 import { state, propose, confirm, reject, invalidate } from "./actions.js";
-import { ask } from "./copilot.js";
+import { ask, runTool, TOOLS, PLAYBOOK } from "./copilot.js";
 import { ROOT } from "./paths.js";
 import { loadSettings, publicSettings, saveSettings, recordTest, onChange } from "./settings.js";
 import { testar } from "./testes.js";
 import { resetGoogleToken } from "./providers/google.js";
+import { diagnosticar } from "./diagnostico.js";
+import { campaigns } from "./actions.js";
+import { statusClaudeDesktop, conectarClaudeDesktop } from "./claude-desktop.js";
 
 const PORT = Number(process.env.PORT || 3000);
 loadSettings();
@@ -57,7 +61,16 @@ app.post("/api/logout", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.use("/api", (req, res, next) => (cookieOk(req) ? next() : res.status(401).json({ erro: "Entre com a senha." })));
+// Ponte com o app do Claude (TrafgFood.exe --mcp): usa um token local guardado na pasta de dados.
+const TOKEN_LOCAL = crypto.createHmac("sha256", SECRET).update("ponte-claude").digest("hex");
+if (process.env.TF_ROOT) {
+  try { fs.writeFileSync(path.join(process.env.DATA_DIR || "data", "ponte-claude.token"), TOKEN_LOCAL, { mode: 0o600 }); } catch (e) { console.error(e); }
+}
+const localOk = (req) => {
+  const t = Buffer.from(String(req.headers["x-tf-ponte"] || "")), w = Buffer.from(TOKEN_LOCAL);
+  return Boolean(process.env.TF_ROOT) && t.length === w.length && crypto.timingSafeEqual(t, w);
+};
+app.use("/api", (req, res, next) => (cookieOk(req) || localOk(req) ? next() : res.status(401).json({ erro: "Entre com a senha." })));
 
 const wrap = (fn) => (req, res) =>
   Promise.resolve(fn(req, res)).catch((e) => {
@@ -179,6 +192,20 @@ app.get("/api/google/callback", wrap(async (req, res) => {
   invalidate();
   volta("ok");
 }));
+
+// Ferramentas usadas pelo app do Claude. Nada é aplicado: propostas esperam o "Confirmar" na tela.
+app.get("/api/ponte/manual", (_req, res) => res.json({ manual: PLAYBOOK, ferramentas: TOOLS }));
+app.post("/api/ponte/ferramenta", wrap(async (req, res) => {
+  const { nome, args } = req.body || {};
+  if (!TOOLS.some((t) => t.name === nome)) throw new Error("Ferramenta desconhecida: " + nome);
+  const lojas = store.get().clients.map((c) => ({ id: c.id, nome: c.nome, cidade: c.cidade, ticket_medio: c.ticket, margem_pct: c.margem || null }));
+  const out = await runTool(nome, args || {}, [], "Claude (app)");
+  res.json(nome === "buscar_campanhas" ? { lojas, campanhas: out } : out);
+}));
+
+app.get("/api/diagnostico", wrap(async (_req, res) => { const { data } = await campaigns(); res.json(diagnosticar(data, store.get().clients)); }));
+app.get("/api/claude-app", (_req, res) => res.json(process.env.TF_ROOT ? statusClaudeDesktop() : { instalado: false, ligado: false, servidor: true }));
+app.post("/api/claude-app/conectar", wrap(async (_req, res) => res.json({ msg: conectarClaudeDesktop(), ...statusClaudeDesktop() })));
 
 // Só no TrafgFood instalado no computador: desliga o programa.
 app.post("/api/desligar", (_req, res) => {
