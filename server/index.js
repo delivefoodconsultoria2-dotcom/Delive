@@ -78,8 +78,9 @@ const wrap = (fn) => (req, res) =>
     res.status(400).json({ erro: e.message || "Erro inesperado." });
   });
 
-app.get("/api/state", wrap(async (_req, res) => res.json({ ...(await state()), usuario: user(), senhaAtiva: Boolean(pass()), desktop: Boolean(process.env.TF_ROOT) })));
-app.post("/api/refresh", wrap(async (_req, res) => { invalidate(); res.json(await state()); }));
+const estadoCompleto = async () => ({ ...(await state()), usuario: user(), senhaAtiva: Boolean(pass()), desktop: Boolean(process.env.TF_ROOT) });
+app.get("/api/state", wrap(async (_req, res) => res.json(await estadoCompleto())));
+app.post("/api/refresh", wrap(async (_req, res) => { invalidate(); res.json(await estadoCompleto()); }));
 
 app.post("/api/actions", wrap(async (req, res) => {
   const { tipo, campanhaId, dados } = req.body || {};

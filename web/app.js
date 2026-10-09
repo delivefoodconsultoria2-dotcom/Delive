@@ -60,10 +60,15 @@ async function api(path, body, method) {
   if (!res.ok) throw new Error(json.erro || "Erro " + res.status);
   return json;
 }
+// IA ligada pela chave da API ou pelo app do Claude (assinatura).
+function pilulaIA() {
+  const on = IA || Boolean(CLAUDEAPP?.ligado);
+  $("#iaPill").classList.toggle("off", !on); $("#iaPill").lastChild.textContent = IA ? "Claude" : on ? "Claude (app)" : "Claude desligado";
+}
 function apply(s) {
   CLIENTES = s.clients; CAMPANHAS = s.campaigns; LOG = s.audit || []; ERROS = s.errors || {}; CONEX = s.connections || {};
   IA = Boolean(s.ia); DESKTOP = Boolean(s.desktop); PENDENTES = s.pending || []; DIAG = null;
-  $("#iaPill").classList.toggle("off", !IA); $("#iaPill").lastChild.textContent = IA ? "Claude" : "Claude desligado"; ATUALIZADO = s.atualizadoEm ? new Date(s.atualizadoEm) : new Date();
+  pilulaIA(); ATUALIZADO = s.atualizadoEm ? new Date(s.atualizadoEm) : new Date();
   if (s.usuario) { $("#uName").textContent = s.usuario; $("#uIni").textContent = s.usuario.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase(); }
   $("#logout").hidden = !s.senhaAtiva;
   $("#mockBadge").hidden = !CAMPANHAS.some((c) => c.exemplo);
@@ -313,12 +318,12 @@ function editarLoja(id) {
 
 // ---------- Configurações ----------
 async function carregarClaudeApp() {
-  try { CLAUDEAPP = await api("/api/claude-app"); render(); } catch (_) { CLAUDEAPP = { instalado: false, ligado: false }; }
+  try { CLAUDEAPP = await api("/api/claude-app"); pilulaIA(); render(); } catch (_) { CLAUDEAPP = { instalado: false, ligado: false }; }
 }
 async function conectarClaudeApp() {
   try {
     const r = await api("/api/claude-app/conectar", {});
-    CLAUDEAPP = r;
+    CLAUDEAPP = r; pilulaIA();
     sheet(`<h3>TrafgFood conectado ao app do Claude</h3><p style="margin:0">Falta só isto:</p><ol style="margin:0;padding-left:20px;line-height:1.7"><li>Feche o app do Claude por completo: clique com o botão direito no ícone do Claude perto do relógio e escolha <b>Sair</b>.</li><li>Abra o app do Claude de novo.</li><li>Escreva: <i>"Use o TrafgFood e me diga o que fazer hoje nas campanhas."</i></li><li>Quando o Claude pedir permissão para usar o TrafgFood, clique em <b>Permitir</b>.</li></ol><p class="sub" style="margin:0">O que o Claude sugerir aparece no Painel, em "Aguardando sua confirmação".</p><div class="row"><button class="btn pri" id="okc">Entendi</button></div>`, (s) => { s.querySelector("#okc").onclick = closeSheet; });
     render();
   } catch (e) { toast(e.message); }
