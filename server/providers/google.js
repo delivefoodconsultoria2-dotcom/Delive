@@ -2,8 +2,22 @@
 // Cada loja aponta para a sua conta em client.googleCustomerId (só números).
 import { store } from "../store.js";
 
-const VERSION = process.env.GOOGLE_ADS_API_VERSION || "v21";
-const BASE = `https://googleads.googleapis.com/${VERSION}`;
+// O Google desliga cada versão da API cerca de um ano depois; uma versão desligada responde 404.
+// Tenta as versões em uso e guarda a que funcionou.
+const CANDIDATAS = ["v24", "v23", "v22", "v25"];
+const FIXA = process.env.GOOGLE_ADS_API_VERSION || null;
+let versao = null; // última versão que respondeu com sucesso
+
+export async function googleFetch(path, init) {
+  const lista = FIXA ? [FIXA] : [...new Set([versao, ...CANDIDATAS].filter(Boolean))];
+  let res;
+  for (const v of lista) {
+    res = await fetch(`https://googleads.googleapis.com/${v}/${path}`, init);
+    if (res.ok) versao = v;
+    if (res.status !== 404 && res.status !== 501) return res;
+  }
+  return res;
+}
 
 const CANAL = { SEARCH: "Pesquisa", PERFORMANCE_MAX: "Performance Max", DISPLAY: "Display", LOCAL: "Local", SMART: "Inteligente", VIDEO: "YouTube" };
 
@@ -37,7 +51,7 @@ async function call(customerId, pathname, body) {
   // O Google vem flexibilizando o developer token; envia só quando estiver configurado.
   if (process.env.GOOGLE_ADS_DEVELOPER_TOKEN) headers["developer-token"] = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
   if (process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) headers["login-customer-id"] = digits(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID);
-  const res = await fetch(`${BASE}/customers/${digits(customerId)}/${pathname}`, { method: "POST", headers, body: JSON.stringify(body) });
+  const res = await googleFetch(`customers/${digits(customerId)}/${pathname}`, { method: "POST", headers, body: JSON.stringify(body) });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     const detail = json.error?.details?.[0]?.errors?.[0]?.message || json.error?.message || res.statusText;

@@ -1,6 +1,6 @@
 // Botão "Testar" da tela Configurações: confere cada conexão sem gastar nada.
 import Anthropic from "@anthropic-ai/sdk";
-import { accessToken, resetGoogleToken } from "./providers/google.js";
+import { accessToken, resetGoogleToken, googleFetch } from "./providers/google.js";
 
 const digits = (v) => String(v || "").replace(/\D/g, "");
 
@@ -23,11 +23,12 @@ export async function testar(grupo) {
     const tk = await accessToken();
     const headers = { Authorization: `Bearer ${tk}` };
     if (E.GOOGLE_ADS_DEVELOPER_TOKEN) headers["developer-token"] = E.GOOGLE_ADS_DEVELOPER_TOKEN;
-    const v = E.GOOGLE_ADS_API_VERSION || "v21";
-    const res = await fetch(`https://googleads.googleapis.com/${v}/customers:listAccessibleCustomers`, { headers });
+    const res = await googleFetch("customers:listAccessibleCustomers", { headers });
     const j = await res.json().catch(() => ({}));
     if (!res.ok) {
       const det = j.error?.details?.[0]?.errors?.[0]?.message || j.error?.message || res.statusText;
+      if (/developer.token|DEVELOPER_TOKEN/i.test(JSON.stringify(j))) throw new Error("Login do Google OK. Falta o developer token: pegue em ads.google.com, na conta MCC, em Ferramentas > Central de API, e cole no campo Developer token.");
+      if (/has not been used|disabled/i.test(det)) throw new Error("Login do Google OK, mas a Google Ads API não está ativada no projeto do Google Cloud. Ative em console.cloud.google.com > APIs e serviços > Biblioteca > Google Ads API.");
       throw new Error("Login do Google OK, mas a Google Ads API recusou: " + det);
     }
     const ids = (j.resourceNames || []).map((r) => r.split("/")[1]);

@@ -67,6 +67,11 @@ function apply() {
     else if (ENV_ORIGINAL[key]) process.env[key] = ENV_ORIGINAL[key];
     else delete process.env[key];
   }
+  // Developer token igual ao Client Secret foi colado no campo errado: ignora.
+  if (process.env.GOOGLE_ADS_DEVELOPER_TOKEN && process.env.GOOGLE_ADS_DEVELOPER_TOKEN === process.env.GOOGLE_ADS_CLIENT_SECRET) {
+    delete process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+    if (cfg.valores.GOOGLE_ADS_DEVELOPER_TOKEN) { delete cfg.valores.GOOGLE_ADS_DEVELOPER_TOKEN; write(); }
+  }
 }
 
 const ouvintes = [];
@@ -108,6 +113,8 @@ export function saveSettings(patch) {
     if (c.proibido && v.startsWith(c.proibido)) throw new Error(`${c.label}: isso é um código de autorização (começa com ${c.proibido}), não o developer token. Deixe vazio se não tiver.`);
     if (c.prefixo && v && !v.startsWith(c.prefixo)) throw new Error(`${c.label} deve começar com ${c.prefixo}. Confira se copiou o valor certo.`);
     if (/\s/.test(v)) throw new Error(`${c.label} tem espaço no meio. Copie de novo, sem espaços.`);
+    const igual = v && Object.keys(CAMPOS).find((k) => k !== key && CAMPOS[k].secret && (process.env[k] || "") === v);
+    if (igual) throw new Error(`${c.label} está com o mesmo valor de ${CAMPOS[igual].label}. Confira se colou no campo certo.`);
     if (v) cfg.valores[key] = v; else delete cfg.valores[key];
     mudou.add(key);
   }
