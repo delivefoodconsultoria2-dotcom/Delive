@@ -8,7 +8,7 @@ const nf = (v) => Number(v || 0).toLocaleString("pt-BR");
 const dec = (v, n = 1) => Number(v).toFixed(n).replace(".", ",");
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
-let CLIENTES = [], CAMPANHAS = [], LOG = [], ERROS = {}, CONEX = {}, IA = false, ATUALIZADO = null;
+let CLIENTES = [], CAMPANHAS = [], LOG = [], ERROS = {}, CONEX = {}, IA = false, ATUALIZADO = null, DESKTOP = false, CONFIG = null;
 const cli = (id) => CLIENTES.find((c) => c.id === id) || { nome: id, cor: "#555" };
 const camp = (id) => CAMPANHAS.find((c) => c.id === id);
 const m = (c) => ({
@@ -37,7 +37,7 @@ function resumoLoja(c) {
 const stLabel = { ativa: "Ativa", pausada: "Pausada", em_analise: "Em análise" };
 const stClass = { ativa: "ativa", pausada: "pausada", em_analise: "analise" };
 const platLabel = { meta: "Meta", google: "Google" };
-const TITULOS = { painel: "Painel de resultados", campanhas: "Campanhas", copiloto: "Gestor de tráfego IA", clientes: "Lojas e contas" };
+const TITULOS = { painel: "Painel de resultados", campanhas: "Campanhas", copiloto: "Gestor de tráfego IA", clientes: "Lojas e contas", config: "Configurações" };
 
 let state = { tab: "painel", client: "todos", plat: "todas", st: "todas", q: "", sort: { k: "gasto7", dir: -1 } };
 try { const t = localStorage.getItem("ct_tab"); if (TITULOS[t]) state.tab = t; } catch (e) {}
@@ -62,7 +62,7 @@ async function api(path, body, method) {
 }
 function apply(s) {
   CLIENTES = s.clients; CAMPANHAS = s.campaigns; LOG = s.audit || []; ERROS = s.errors || {}; CONEX = s.connections || {};
-  IA = Boolean(s.ia);
+  IA = Boolean(s.ia); DESKTOP = Boolean(s.desktop);
   $("#iaPill").classList.toggle("off", !IA); $("#iaPill").lastChild.textContent = IA ? "Claude" : "Claude desligado"; ATUALIZADO = s.atualizadoEm ? new Date(s.atualizadoEm) : new Date();
   if (s.usuario) { $("#uName").textContent = s.usuario; $("#uIni").textContent = s.usuario.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase(); }
   $("#logout").hidden = !s.senhaAtiva;
@@ -89,7 +89,7 @@ function renderFilters() {
   const f = $("#filters");
   const items = [["todos", "Todos"], ...CLIENTES.map((c) => [c.id, c.nome])];
   f.innerHTML = items.map(([id, n]) => `<button class="chip" data-c="${esc(id)}" aria-pressed="${state.client === id}">${esc(n)}</button>`).join("");
-  f.hidden = state.tab === "copiloto" || state.tab === "clientes";
+  f.hidden = state.tab === "copiloto" || state.tab === "clientes" || state.tab === "config";
   const hora = ATUALIZADO ? " · atualizado às " + ATUALIZADO.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
   $("#ctx").innerHTML = esc(state.client === "todos" ? "Todas as lojas" : cli(state.client).nome) + `<span class="hora">${esc(hora)}</span>`;
 }
@@ -137,9 +137,9 @@ function alertas(list) {
 function primeirosPassos() {
   const semMargem = CLIENTES.filter((c) => !(Number(c.margem) > 0)).length;
   const passos = [
-    [CONEX.google, "Conectar o Google Ads", "Chaves GOOGLE_ADS_* no servidor (Render → Environment)."],
-    [CONEX.meta, "Conectar a Meta (Facebook e Instagram)", "Token de usuário do sistema em META_ACCESS_TOKEN."],
-    [IA, "Ligar o gestor de tráfego IA", "Chave da Claude API em ANTHROPIC_API_KEY."],
+    [CONEX.google, "Conectar o Google Ads", "Client ID, Client Secret e refresh token em Configurações."],
+    [CONEX.meta, "Conectar a Meta (Facebook e Instagram)", "Token de usuário do sistema em Configurações."],
+    [IA, "Ligar o gestor de tráfego IA", "Chave da Claude API em Configurações."],
     [CLIENTES.length && !semMargem, "Cadastrar a margem de cada loja", semMargem ? `${semMargem} loja${semMargem > 1 ? "s" : ""} sem margem. Sem ela o app não sabe se a campanha dá lucro.` : ""],
     [CLIENTES.some((c) => c.metaAdAccountId || c.googleCustomerId), "Ligar as contas de anúncio às lojas", "ID da conta Meta (act_...) e do cliente Google Ads em cada loja."],
   ];
@@ -150,7 +150,7 @@ function primeirosPassos() {
   if (fechado) return `<button class="setup-min" data-act="setup">Primeiros passos · <span class="num">${feitos} de ${passos.length}</span> feitos</button>`;
   return `<section class="card setup"><div class="hd"><b>Primeiros passos</b><span><span class="num">${feitos} de ${passos.length}</span> <button class="btn sm" data-act="setupx" data-f="${feitos}">Ocultar</button></span></div>
     <div class="bar"><i style="width:${(feitos / passos.length) * 100}%"></i></div>
-    <ol>${passos.map(([ok, t, d]) => `<li class="${ok ? "ok" : ""}"><span class="ck">${ok ? "✓" : ""}</span><div><b>${t}</b>${!ok && d ? `<small>${esc(d)}</small>` : ""}</div>${!ok && t.startsWith("Cadastrar") || !ok && t.startsWith("Ligar as") ? `<button class="btn sm" data-tab="clientes">Abrir lojas</button>` : ""}</li>`).join("")}</ol></section>`;
+    <ol>${passos.map(([ok, t, d]) => `<li class="${ok ? "ok" : ""}"><span class="ck">${ok ? "✓" : ""}</span><div><b>${t}</b>${!ok && d ? `<small>${esc(d)}</small>` : ""}</div>${ok ? "" : t.startsWith("Cadastrar") || t.startsWith("Ligar as") ? `<button class="btn sm" data-tab="clientes">Abrir lojas</button>` : `<button class="btn sm" data-tab="config">Configurar</button>`}</li>`).join("")}</ol></section>`;
 }
 function tabelaLojas() {
   if (!CLIENTES.length) return `<div class="empty">Nenhuma loja cadastrada. <button class="btn sm pri" data-act="novaloja">Cadastrar loja</button></div>`;
@@ -262,9 +262,9 @@ function viewClientes() {
   <h2>Contas conectadas</h2>
   <div class="list">
     <div class="conn"><div class="h"><span class="tag meta">Meta</span> Facebook e Instagram <span class="st ${CONEX.meta ? "ativa" : "pausada"}" style="margin-left:auto">${CONEX.meta ? "Conectado" : "Modo exemplo"}</span></div>
-      ${CONEX.meta ? `<div class="sub" style="margin:0">Cadastre o ID da conta de anúncio (act_...) em cada loja.</div>` : `<ol><li>Business Manager verificado</li><li>App com Marketing API e acesso avançado a ads_management</li><li>Token de usuário do sistema em META_ACCESS_TOKEN no servidor</li></ol>`}</div>
+      ${CONEX.meta ? `<div class="sub" style="margin:0">Cadastre o ID da conta de anúncio (act_...) em cada loja.</div>` : `<div class="row" style="align-items:center"><span class="sub" style="margin:0;flex:1">Coloque o token da Meta em Configurações.</span><button class="btn sm" data-tab="config">Configurar</button></div>`}</div>
     <div class="conn"><div class="h"><span class="tag google">Google</span> Google Ads <span class="st ${CONEX.google ? "ativa" : "pausada"}" style="margin-left:auto">${CONEX.google ? "Conectado" : "Modo exemplo"}</span></div>
-      ${CONEX.google ? `<div class="sub" style="margin:0">Cadastre o ID de cliente Google Ads (123-456-7890) em cada loja.</div>` : `<ol><li>Conta de administrador (MCC) com os clientes vinculados</li><li>Developer token com Basic Access</li><li>Login OAuth do Google Cloud nas variáveis GOOGLE_ADS_* do servidor</li></ol>`}</div>
+      ${CONEX.google ? `<div class="sub" style="margin:0">Cadastre o ID de cliente Google Ads (123-456-7890) em cada loja.</div>` : `<div class="row" style="align-items:center"><span class="sub" style="margin:0;flex:1">Coloque as chaves do Google Ads em Configurações.</span><button class="btn sm" data-tab="config">Configurar</button></div>`}</div>
   </div>`;
 }
 const CORES = ["#1DB46A","#0E7C66","#2F80ED","#7B61FF","#E8505B","#F2994A","#F2C94C","#8D6E63"];
@@ -302,6 +302,56 @@ function editarLoja(id) {
       } catch (e) { toast(e.message); }
     };
   });
+}
+
+
+// ---------- Configurações ----------
+async function loadConfig() {
+  try { CONFIG = await api("/api/config"); } catch (e) { CONFIG = []; toast(e.message); }
+  if (state.tab === "config") render();
+}
+function statusGrupo(g) {
+  const algum = g.campos.some((c) => c.salvo || c.valor);
+  if (g.id === "acesso") return ["ok", g.campos.find((c) => c.key === "APP_PASSWORD")?.salvo ? "Senha ativa" : "Sem senha"];
+  if (g.teste?.ok) return ["ok", "Conectado"];
+  if (g.teste) return ["bad", "Com erro"];
+  if ((g.id === "google" && CONEX.google) || (g.id === "meta" && CONEX.meta) || (g.id === "claude" && IA)) return ["warn", "Salvo, falta testar"];
+  return ["off", algum ? "Incompleto" : "Não conectado"];
+}
+function campoHtml(c) {
+  const ph = c.secret ? (c.salvo ? `Salvo (final ${c.final}). Cole outro para trocar.` : c.placeholder) : c.placeholder;
+  return `<div class="field"><label for="cf-${c.key}">${esc(c.label)}${c.origem === "servidor" ? ` <span class="sub" style="font-weight:400">· vem do servidor</span>` : ""}</label>
+    <div class="cfin"><input id="cf-${c.key}" data-key="${c.key}" ${c.secret ? `type="password" autocomplete="new-password" data-secret="1"` : `type="text"`} spellcheck="false" placeholder="${esc(ph)}" value="${c.secret ? "" : esc(c.valor || "")}">
+    ${c.secret && c.salvo && c.origem === "app" ? `<button class="btn sm" data-limpar="${c.key}" title="Apagar este valor">Apagar</button>` : ""}</div></div>`;
+}
+function viewConfig() {
+  if (!CONFIG) { loadConfig(); return `<div class="empty">Carregando...</div>`; }
+  return `<p class="sub" style="margin:0 0 12px">As chaves ficam guardadas só ${DESKTOP ? "neste computador" : "no servidor do TrafgFood"} e nunca aparecem de novo na tela. Para trocar um segredo, cole o novo por cima.</p>
+  <div class="cfgs">${CONFIG.map((g) => { const [cls, txt] = statusGrupo(g); return `<section class="card cfg" data-grupo="${g.id}">
+    <div class="cfh"><b>${esc(g.titulo)}</b><span class="stx ${cls}">${txt}</span></div>
+    <p class="sub" style="margin:0">${esc(g.ajuda)}</p>
+    ${g.teste ? `<p class="tmsg ${g.teste.ok ? "ok" : "bad"}">Último teste: ${esc(g.teste.msg)}</p>` : ""}
+    ${g.campos.map(campoHtml).join("")}
+    <div class="row"><button class="btn pri sm" data-salvar="${g.id}">Salvar</button>${g.id !== "acesso" ? `<button class="btn sm" data-testar="${g.id}">Testar conexão</button>` : ""}</div>
+  </section>`; }).join("")}</div>
+  ${DESKTOP ? `<section class="card cfg" style="margin-top:12px"><div class="cfh"><b>Programa</b></div><p class="sub" style="margin:0">O TrafgFood fica ligado em segundo plano. Para abrir de novo, use o ícone TrafgFood na área de trabalho ou no menu Iniciar.</p><div class="row"><button class="btn dng sm" data-act="desligar">Desligar o TrafgFood</button></div></section>` : ""}`;
+}
+async function salvarGrupo(id) {
+  const sec = document.querySelector(`[data-grupo="${id}"]`), patch = {};
+  sec.querySelectorAll("input[data-key]").forEach((i) => { if (!i.dataset.secret || i.value.trim()) patch[i.dataset.key] = i.value.trim(); });
+  try {
+    CONFIG = await api("/api/config", patch);
+    toast("Salvo");
+    await load(true);
+    if (id !== "acesso" && CONFIG.find((g) => g.id === id).campos.some((c) => c.salvo || c.valor)) return testarGrupo(id);
+    render();
+  } catch (e) { toast(e.message); }
+}
+async function testarGrupo(id) {
+  const b = document.querySelector(`[data-testar="${id}"]`);
+  if (b) { b.disabled = true; b.textContent = "Testando..."; }
+  try { await api(`/api/config/test/${id}`, {}); } catch (e) { toast(e.message); }
+  CONFIG = await api("/api/config"); await load(true);
 }
 
 // ---------- Sheets e confirmação ----------
@@ -504,6 +554,10 @@ function handleClick(e) {
   if (d.loja !== undefined) return editarLoja(d.loja);
   if (d.act === "nova") return novaCampanha();
   if (d.act === "novaloja") return editarLoja("");
+  if (d.salvar) return salvarGrupo(d.salvar);
+  if (d.testar) return testarGrupo(d.testar);
+  if (d.limpar) return api("/api/config", { [d.limpar]: null }).then((c) => { CONFIG = c; toast("Apagado"); load(true); }).catch((e) => toast(e.message));
+  if (d.act === "desligar") return api("/api/desligar", {}).then(() => { document.body.innerHTML = `<div style="display:grid;place-items:center;height:100vh;text-align:center;padding:24px"><div><h2>TrafgFood desligado</h2><p style="color:var(--muted)">Para abrir de novo, use o ícone TrafgFood na área de trabalho.</p></div></div>`; }).catch((e) => toast(e.message));
   if (d.act === "setup" || d.act === "setupx") { try { d.act === "setup" ? localStorage.removeItem("tf_setup") : localStorage.setItem("tf_setup", d.f); } catch (_) {} return render(); }
   if (d.act === "relatorio") return relatorio();
 }
@@ -511,7 +565,7 @@ for (const sel of ["#side", "#view", "#tabs"]) $(sel).addEventListener("click", 
 
 function render() {
   renderFilters();
-  $("#view").innerHTML = { painel: viewPainel, campanhas: viewCampanhas, copiloto: viewCopiloto, clientes: viewClientes }[state.tab]();
+  $("#view").innerHTML = { painel: viewPainel, campanhas: viewCampanhas, copiloto: viewCopiloto, clientes: viewClientes, config: viewConfig }[state.tab]();
   $("#pageTitle").textContent = TITULOS[state.tab];
   document.querySelectorAll("#tabs button,#snav button").forEach((b) => b.setAttribute("aria-current", b.dataset.tab === state.tab ? "page" : "false"));
   $("#composer").hidden = state.tab !== "copiloto";

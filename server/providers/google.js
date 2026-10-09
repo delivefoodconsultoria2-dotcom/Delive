@@ -8,8 +8,9 @@ const BASE = `https://googleads.googleapis.com/${VERSION}`;
 const CANAL = { SEARCH: "Pesquisa", PERFORMANCE_MAX: "Performance Max", DISPLAY: "Display", LOCAL: "Local", SMART: "Inteligente", VIDEO: "YouTube" };
 
 let token = { value: null, exp: 0 };
+export const resetGoogleToken = () => { token = { value: null, exp: 0 }; };
 
-async function accessToken() {
+export async function accessToken() {
   if (token.value && Date.now() < token.exp - 60_000) return token.value;
   const res = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",

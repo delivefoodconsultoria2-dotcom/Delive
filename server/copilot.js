@@ -8,7 +8,13 @@ import { campaigns, propose } from "./actions.js";
 import { store } from "./store.js";
 import { ROOT } from "./paths.js";
 
-const client = new Anthropic();
+// Recriado quando a chave muda pela tela Configurações.
+let client, chaveAtual;
+const claude = () => {
+  const k = process.env.ANTHROPIC_API_KEY;
+  if (!client || k !== chaveAtual) { client = new Anthropic({ apiKey: k }); chaveAtual = k; }
+  return client;
+};
 const MODEL = process.env.CLAUDE_MODEL || "claude-opus-5-5";
 const EFFORT = process.env.CLAUDE_EFFORT || "medium";
 
@@ -166,7 +172,7 @@ export async function ask(history) {
   const proposals = [];
 
   for (let i = 0; i < 8; i++) {
-    const response = await client.beta.messages.create({
+    const response = await claude().beta.messages.create({
       model: MODEL,
       max_tokens: 16000,
       betas: ["server-side-fallback-2026-07-01"],

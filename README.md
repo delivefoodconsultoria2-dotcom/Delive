@@ -13,23 +13,22 @@ Painel por loja, campanhas, gestor de tráfego IA por voz e texto, e confirmaç�
 
 ## Rodar no computador
 
-Windows sem instalar nada: gere o pacote com `npm run build:exe` (sai em `dist/TrafgFood-Windows.zip`), extraia e dê dois cliques em `TrafgFood.exe`. As chaves ficam em `configuracao.txt` ao lado do .exe e os dados na pasta `dados`. O app fica acessível só no próprio computador.
+**Windows:** `npm run build:exe` gera `dist/Instalar-TrafgFood.exe`. O instalador não pede administrador, cria atalho na área de trabalho e no menu Iniciar e pode ligar o TrafgFood junto com o Windows. O programa roda sem janela, só para o próprio computador, em http://localhost:3847. Lojas, histórico e chaves ficam em `%APPDATA%\TrafgFood`.
 
-Jeito fácil: instale o Node.js (https://nodejs.org), baixe o projeto e dê dois cliques em `iniciar-windows.bat` (Windows) ou `iniciar-mac.command` (Mac). Na primeira vez ele abre o arquivo `.env` para você colocar a `ANTHROPIC_API_KEY`; depois abre o TrafgFood no navegador em http://localhost:3000.
+Sem assinatura digital, o Windows mostra o aviso "O Windows protegeu o computador". Para tirar o aviso é preciso assinar `TrafgFood.exe` e o instalador com um certificado de assinatura de código no nome da empresa.
 
-Pelo terminal (Node.js 20 ou mais novo):
+**Pelo terminal** (Node.js 20 ou mais novo):
 
 ```bash
 npm install
-cp .env.example .env   # preencha a senha e as chaves que já tiver
-node --env-file=.env server/index.js
+node server/index.js
 ```
 
-Abra http://localhost:3000.
+Abra http://localhost:3000 e coloque as chaves em **Configurações**.
 
 ## Publicar na internet
 
-Qualquer serviço que rode Node ou Docker serve (Render, Railway, Fly.io, uma VPS). Use o `Dockerfile`, monte um volume em `/data` para não perder as lojas e o histórico, e configure as variáveis do `.env.example` no painel do serviço. Use sempre HTTPS e uma `APP_PASSWORD` forte.
+Qualquer serviço que rode Node ou Docker serve (Render, Railway, Fly.io, uma VPS). Use o `Dockerfile`, monte um volume em `/data` para não perder as lojas e o histórico, e, depois de publicado, coloque as chaves na tela **Configurações** (ou nas variáveis do `.env.example`). Use sempre HTTPS e uma `APP_PASSWORD` forte.
 
 ## Conectar as plataformas
 

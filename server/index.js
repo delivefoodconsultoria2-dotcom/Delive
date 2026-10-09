@@ -6,14 +6,20 @@ import { seedIfEmpty } from "./providers/mock.js";
 import { state, propose, confirm, reject, invalidate } from "./actions.js";
 import { ask } from "./copilot.js";
 import { ROOT } from "./paths.js";
+import { loadSettings, publicSettings, saveSettings, recordTest, onChange } from "./settings.js";
+import { testar } from "./testes.js";
+import { resetGoogleToken } from "./providers/google.js";
 
 const PORT = Number(process.env.PORT || 3000);
-const PASSWORD = process.env.APP_PASSWORD || "";
+loadSettings();
+// Lidos a cada uso: podem mudar pela tela Configurações.
+const pass = () => process.env.APP_PASSWORD || "";
 const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
-const USER = process.env.APP_USER_NAME || "Gestor";
+const user = () => process.env.APP_USER_NAME || "Gestor";
+onChange(() => { invalidate(); resetGoogleToken(); });
 const WEB = path.join(ROOT, "web");
 
-if (!PASSWORD && process.env.HOST !== "127.0.0.1") console.warn("Aviso: APP_PASSWORD vazio. Qualquer pessoa com o endereço consegue entrar.");
+if (!pass() && process.env.HOST !== "127.0.0.1") console.warn("Aviso: APP_PASSWORD vazio. Qualquer pessoa com o endereço consegue entrar.");
 
 seedIfEmpty();
 const app = express();
@@ -22,7 +28,7 @@ app.use(express.json({ limit: "200kb" }));
 // ---- login simples por senha, com cookie assinado ----
 const sign = (v) => v + "." + crypto.createHmac("sha256", SECRET).update(v).digest("base64url");
 function cookieOk(req) {
-  if (!PASSWORD) return true;
+  if (!pass()) return true;
   const raw = (req.headers.cookie || "").split(/;\s*/).find((c) => c.startsWith("tf="));
   if (!raw) return false;
   const val = decodeURIComponent(raw.slice(3));
@@ -32,14 +38,17 @@ function cookieOk(req) {
   return a.length === b.length && crypto.timingSafeEqual(a, b) && Number(exp) > Date.now();
 }
 
+function sessionCookie(req) {
+  const exp = String(Date.now() + 30 * 864e5);
+  return `tf=${encodeURIComponent(sign(exp))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${30 * 86400}${req.secure ? "; Secure" : ""}`;
+}
 app.post("/api/login", (req, res) => {
   const given = Buffer.from(String(req.body?.senha || ""));
-  const want = Buffer.from(PASSWORD);
-  if (PASSWORD && !(given.length === want.length && crypto.timingSafeEqual(given, want))) {
+  const want = Buffer.from(pass());
+  if (pass() && !(given.length === want.length && crypto.timingSafeEqual(given, want))) {
     return res.status(401).json({ erro: "Senha incorreta." });
   }
-  const exp = String(Date.now() + 30 * 864e5);
-  res.setHeader("Set-Cookie", `tf=${encodeURIComponent(sign(exp))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${30 * 86400}${req.secure ? "; Secure" : ""}`);
+  res.setHeader("Set-Cookie", sessionCookie(req));
   res.json({ ok: true });
 });
 app.post("/api/logout", (_req, res) => {
@@ -55,20 +64,20 @@ const wrap = (fn) => (req, res) =>
     res.status(400).json({ erro: e.message || "Erro inesperado." });
   });
 
-app.get("/api/state", wrap(async (_req, res) => res.json({ ...(await state()), usuario: USER, senhaAtiva: Boolean(PASSWORD) })));
+app.get("/api/state", wrap(async (_req, res) => res.json({ ...(await state()), usuario: user(), senhaAtiva: Boolean(pass()), desktop: Boolean(process.env.TF_ROOT) })));
 app.post("/api/refresh", wrap(async (_req, res) => { invalidate(); res.json(await state()); }));
 
 app.post("/api/actions", wrap(async (req, res) => {
   const { tipo, campanhaId, dados } = req.body || {};
   res.json(await propose({ tipo, campanhaId, dados, origem: "tela" }));
 }));
-app.post("/api/actions/:id/confirm", wrap(async (req, res) => res.json(await confirm(req.params.id, USER))));
+app.post("/api/actions/:id/confirm", wrap(async (req, res) => res.json(await confirm(req.params.id, user()))));
 app.post("/api/actions/:id/reject", wrap(async (req, res) => res.json(reject(req.params.id) || {})));
 
 app.post("/api/copilot", wrap(async (req, res) => {
   const history = Array.isArray(req.body?.history) ? req.body.history : [];
   if (!history.length) throw new Error("Mensagem vazia.");
-  if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) throw new Error("O gestor IA precisa da chave ANTHROPIC_API_KEY no servidor.");
+  if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) throw new Error("O gestor IA está desligado. Coloque a chave da Claude API em Configurações.");
   try {
     res.json(await ask(history));
   } catch (e) {
@@ -100,7 +109,7 @@ app.post("/api/clients", wrap(async (req, res) => {
     });
     return { ...c, nova };
   });
-  store.audit({ quem: USER, origem: "tela", acao: "loja", resultado: (out.nova ? "Loja cadastrada: " : "Loja atualizada: ") + out.nome });
+  store.audit({ quem: user(), origem: "tela", acao: "loja", resultado: (out.nova ? "Loja cadastrada: " : "Loja atualizada: ") + out.nome });
   invalidate();
   res.json(out);
 }));
@@ -114,10 +123,33 @@ app.delete("/api/clients/:id", wrap(async (req, res) => {
     d.actions = d.actions.filter((a) => !(a.status === "pendente" && a.dados?.clientId === c.id));
     return c.nome;
   });
-  store.audit({ quem: USER, origem: "tela", acao: "excluir_loja", resultado: "Loja excluída: " + nome });
+  store.audit({ quem: user(), origem: "tela", acao: "excluir_loja", resultado: "Loja excluída: " + nome });
   invalidate();
   res.json({ ok: true });
 }));
+
+// Configurações: as chaves são digitadas aqui e nunca voltam para a tela.
+app.get("/api/config", (_req, res) => res.json(publicSettings()));
+app.post("/api/config", wrap(async (req, res) => {
+  const out = saveSettings(req.body || {});
+  // Quem acabou de criar a senha continua logado.
+  if (req.body?.APP_PASSWORD) res.setHeader("Set-Cookie", sessionCookie(req));
+  store.audit({ quem: user(), origem: "tela", acao: "config", resultado: "Configurações atualizadas: " + Object.keys(req.body || {}).filter((k) => req.body[k] !== "").length + " campo(s)" });
+  res.json(out);
+}));
+app.post("/api/config/test/:grupo", wrap(async (req, res) => {
+  let r;
+  try { r = recordTest(req.params.grupo, true, await testar(req.params.grupo)); }
+  catch (e) { r = recordTest(req.params.grupo, false, e.message); }
+  invalidate();
+  res.json(r);
+}));
+// Só no TrafgFood instalado no computador: desliga o programa.
+app.post("/api/desligar", (_req, res) => {
+  if (!process.env.TF_ROOT) return res.status(400).json({ erro: "Só funciona no TrafgFood instalado no computador." });
+  res.json({ ok: true });
+  setTimeout(() => process.exit(0), 300);
+});
 
 app.use(express.static(WEB, { extensions: ["html"] }));
 app.get("*", (_req, res) => res.sendFile(path.join(WEB, "index.html")));
