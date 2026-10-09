@@ -27,12 +27,25 @@ const SEED_CAMPAIGNS = [
   C("google:c9", "casamae", "google", "Pesquisa", "Marmita delivery BH", "Ligações", "ativa", 30, 198, 4100, 450, 63, 27, [27, 28, 29, 30, 28, 29, 27]),
 ];
 
+// Dados de exemplo só no modo demonstração (TF_EXEMPLO=1). No uso real, o sistema mostra apenas
+// o que vem da Meta e do Google, e as lojas de exemplo antigas são apagadas.
+export const DEMO = process.env.TF_EXEMPLO === "1";
+
 export function seedIfEmpty() {
   store.update((d) => {
-    // Só semeia na primeira vez: se a pessoa excluir todas as lojas, elas não voltam.
-    if (!d.clients.length && !d.seeded) d.clients = structuredClone(SEED_CLIENTS);
+    if (DEMO) {
+      // Só semeia na primeira vez: se a pessoa excluir todas as lojas, elas não voltam.
+      if (!d.clients.length && !d.seeded) d.clients = structuredClone(SEED_CLIENTS);
+      d.seeded = true;
+      if (!d.mockCampaigns) d.mockCampaigns = structuredClone(SEED_CAMPAIGNS);
+      return;
+    }
+    // Apaga as lojas de exemplo que a pessoa não transformou em loja real (sem conta ligada).
+    const exemplo = new Map(SEED_CLIENTS.map((c) => [c.id, c.nome]));
+    d.clients = d.clients.filter((c) => !(exemplo.get(c.id) === c.nome && !c.metaAdAccountId && !c.googleCustomerId));
     d.seeded = true;
-    if (!d.mockCampaigns) d.mockCampaigns = structuredClone(SEED_CAMPAIGNS);
+    d.mockCampaigns = [];
+    if (Array.isArray(d.actions)) d.actions = d.actions.filter((a) => !(a.status === "pendente" && /^(meta|google):c\d$/.test(a.campanhaId || "")));
   });
 }
 
@@ -47,10 +60,14 @@ export function mockProvider(platform) {
     name: platform,
     live: false,
     async listCampaigns() {
-      return store.get().mockCampaigns.filter((c) => c.plataforma === platform);
+      return (store.get().mockCampaigns || []).filter((c) => c.plataforma === platform);
     },
     async setStatus(id, status) {
       store.update(() => { find(platform, id).status = status; });
+    },
+    async finalize(id) {
+      find(platform, id);
+      store.update((d) => { d.mockCampaigns = d.mockCampaigns.filter((x) => x.id !== `${platform}:${id}`); });
     },
     async setDailyBudget(id, reais) {
       store.update(() => { find(platform, id).orcamento = reais; });

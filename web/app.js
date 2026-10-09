@@ -8,7 +8,7 @@ const nf = (v) => Number(v || 0).toLocaleString("pt-BR");
 const dec = (v, n = 1) => Number(v).toFixed(n).replace(".", ",");
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
-let CLIENTES = [], CAMPANHAS = [], LOG = [], ERROS = {}, CONEX = {}, IA = false, ATUALIZADO = null, DESKTOP = false, CONFIG = null, PENDENTES = [], DIAG = null, CLAUDEAPP = null;
+let CLIENTES = [], CAMPANHAS = [], LOG = [], ERROS = {}, CONEX = {}, IA = false, ATUALIZADO = null, DESKTOP = false, RASCUNHOS = [], CONFIG = null, PENDENTES = [], DIAG = null, CLAUDEAPP = null;
 const cli = (id) => CLIENTES.find((c) => c.id === id) || { nome: id, cor: "#555" };
 const camp = (id) => CAMPANHAS.find((c) => c.id === id);
 const m = (c) => ({
@@ -37,11 +37,12 @@ function resumoLoja(c) {
 const stLabel = { ativa: "Ativa", pausada: "Pausada", em_analise: "Em análise" };
 const stClass = { ativa: "ativa", pausada: "pausada", em_analise: "analise" };
 const platLabel = { meta: "Meta", google: "Google" };
-const TITULOS = { painel: "Painel de resultados", campanhas: "Campanhas", copiloto: "Gestor de tráfego", clientes: "Lojas e contas", config: "Configurações" };
+const TITULOS = { criar: "Nova campanha", painel: "Painel de resultados", campanhas: "Campanhas", copiloto: "Gestor de tráfego", clientes: "Lojas e contas", config: "Configurações" };
 
-let state = { tab: "painel", client: "todos", plat: "todas", st: "todas", q: "", sort: { k: "gasto7", dir: -1 } };
-try { const t = localStorage.getItem("ct_tab"); if (TITULOS[t]) state.tab = t; } catch (e) {}
-const visiveis = () => CAMPANHAS.filter((c) => (state.client === "todos" || c.clientId === state.client) && (state.plat === "todas" || c.plataforma === state.plat));
+let state = { foco: "todos", tab: "painel", client: "todos", plat: "todas", st: "todas", q: "", sort: { k: "gasto7", dir: -1 } };
+try { const t = localStorage.getItem("ct_tab"); if (TITULOS[t] && t !== "criar") state.tab = t; const f = localStorage.getItem("tf_foco"); if (["todos", "comida", "servico"].includes(f)) state.foco = f; } catch (e) {}
+const lojasDoFoco = () => CLIENTES.filter((c) => state.foco === "todos" || (c.foco || "comida") === state.foco);
+const visiveis = () => CAMPANHAS.filter((c) => (state.client === "todos" ? lojasDoFoco().some((l) => l.id === c.clientId) : c.clientId === state.client) && (state.plat === "todas" || c.plataforma === state.plat));
 
 function toast(t) {
   const el = document.createElement("div");
@@ -67,7 +68,7 @@ function pilulaIA() {
 }
 function apply(s) {
   CLIENTES = s.clients; CAMPANHAS = s.campaigns; LOG = s.audit || []; ERROS = s.errors || {}; CONEX = s.connections || {};
-  IA = Boolean(s.ia); DESKTOP = Boolean(s.desktop); PENDENTES = s.pending || []; DIAG = null;
+  IA = Boolean(s.ia); DESKTOP = Boolean(s.desktop); PENDENTES = s.pending || []; RASCUNHOS = s.rascunhos || []; DIAG = null;
   pilulaIA(); ATUALIZADO = s.atualizadoEm ? new Date(s.atualizadoEm) : new Date();
   if (s.usuario) { $("#uName").textContent = s.usuario; $("#uIni").textContent = s.usuario.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase(); }
   $("#logout").hidden = !s.senhaAtiva;
@@ -92,13 +93,14 @@ $("#refreshBtn").addEventListener("click", async () => { toast("Atualizando núm
 // ---------- Filtros ----------
 function renderFilters() {
   const f = $("#filters");
-  const items = [["todos", "Todos"], ...CLIENTES.map((c) => [c.id, c.nome])];
-  f.innerHTML = items.map(([id, n]) => `<button class="chip" data-c="${esc(id)}" aria-pressed="${state.client === id}">${esc(n)}</button>`).join("");
-  f.hidden = state.tab === "copiloto" || state.tab === "clientes" || state.tab === "config";
+  const items = [["todos", "Todos"], ...lojasDoFoco().map((c) => [c.id, c.nome])];
+  const focos = CLIENTES.some((c) => c.foco === "servico") ? `<span class="foco" role="group" aria-label="Foco">${[["todos", "Tudo"], ["comida", "Comida"], ["servico", "Serviço"]].map(([v, t]) => `<button class="chip" data-foco="${v}" aria-pressed="${state.foco === v}">${t}</button>`).join("")}</span>` : "";
+  f.innerHTML = focos + items.map(([id, n]) => `<button class="chip" data-c="${esc(id)}" aria-pressed="${state.client === id}">${esc(n)}</button>`).join("");
+  f.hidden = ["copiloto", "clientes", "config", "criar"].includes(state.tab);
   const hora = ATUALIZADO ? " · atualizado às " + ATUALIZADO.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
   $("#ctx").innerHTML = esc(state.client === "todos" ? "Todas as lojas" : cli(state.client).nome) + `<span class="hora">${esc(hora)}</span>`;
 }
-$("#filters").addEventListener("click", (e) => { const b = e.target.closest("[data-c]"); if (!b) return; state.client = b.dataset.c; render(); });
+$("#filters").addEventListener("click", (e) => { if (e.target.closest("[data-foco]")) return handleClick(e); const b = e.target.closest("[data-c]"); if (!b) return; state.client = b.dataset.c; render(); });
 
 // ---------- Painel ----------
 function totais(list) {
@@ -140,9 +142,14 @@ function alertas(list) {
   return out.sort((a, b) => ordem[a.cls] - ordem[b.cls]).slice(0, 6);
 }
 // Propostas criadas pelo gestor (no app ou no app do Claude) esperando o "Confirmar".
+function rascunhosHtml() {
+  if (!RASCUNHOS.length) return "";
+  return `<section class="card pend"><div class="cfh"><b>Campanhas montadas pelo gestor IA</b><span class="stx warn">${RASCUNHOS.length}</span></div>
+    ${RASCUNHOS.map((r) => `<div class="prow"><div><b>${esc(r.dados.nome || "Campanha")}</b><small>${esc(cli(r.dados.clientId)?.nome || "")} · ${r.dados.plataforma === "google" ? "Google Pesquisa" : "Meta"} · ${brl(r.dados.orcamento || 0)}/dia${r.dados.motivo ? " · " + esc(r.dados.motivo) : ""}</small></div><span class="row"><button class="btn sm pri" data-rasc="${esc(r.id)}">Completar e criar</button><button class="btn sm" data-rascx="${esc(r.id)}">Descartar</button></span></div>`).join("")}</section>`;
+}
 function pendentesHtml() {
-  if (!PENDENTES.length) return "";
-  return `<section class="card pend"><div class="cfh"><b>Aguardando sua confirmação</b><span class="stx warn">${PENDENTES.length}</span></div>
+  if (!PENDENTES.length) return rascunhosHtml();
+  return rascunhosHtml() + `<section class="card pend"><div class="cfh"><b>Aguardando sua confirmação</b><span class="stx warn">${PENDENTES.length}</span></div>
     ${PENDENTES.map((a) => `<div class="prow"><div><b>${esc(a.resumo?.titulo || a.tipo)}</b><small>${esc(a.origem || "")}${a.dados?.motivo ? " · " + esc(a.dados.motivo) : ""}${a.resumo?.custo ? " · " + esc(a.resumo.custo) : ""}</small></div><button class="btn sm pri" data-pend="${esc(a.id)}">Revisar</button></div>`).join("")}</section>`;
 }
 function primeirosPassos() {
@@ -272,9 +279,9 @@ function viewClientes() {
   }).join("")}</div>
   <h2>Contas conectadas</h2>
   <div class="list">
-    <div class="conn"><div class="h"><span class="tag meta">Meta</span> Facebook e Instagram <span class="st ${CONEX.meta ? "ativa" : "pausada"}" style="margin-left:auto">${CONEX.meta ? "Conectado" : "Modo exemplo"}</span></div>
+    <div class="conn"><div class="h"><span class="tag meta">Meta</span> Facebook e Instagram <span class="st ${CONEX.meta ? "ativa" : "pausada"}" style="margin-left:auto">${CONEX.meta ? "Conectado" : "Não conectado"}</span></div>
       ${CONEX.meta ? `<div class="sub" style="margin:0">Cadastre o ID da conta de anúncio (act_...) em cada loja.</div>` : `<div class="row" style="align-items:center"><span class="sub" style="margin:0;flex:1">Coloque o token da Meta em Configurações.</span><button class="btn sm" data-tab="config">Configurar</button></div>`}</div>
-    <div class="conn"><div class="h"><span class="tag google">Google</span> Google Ads <span class="st ${CONEX.google ? "ativa" : "pausada"}" style="margin-left:auto">${CONEX.google ? "Conectado" : "Modo exemplo"}</span></div>
+    <div class="conn"><div class="h"><span class="tag google">Google</span> Google Ads <span class="st ${CONEX.google ? "ativa" : "pausada"}" style="margin-left:auto">${CONEX.google ? "Conectado" : "Não conectado"}</span></div>
       ${CONEX.google ? `<div class="sub" style="margin:0">Cadastre o ID de cliente Google Ads (123-456-7890) em cada loja.</div>` : `<div class="row" style="align-items:center"><span class="sub" style="margin:0;flex:1">Coloque as chaves do Google Ads em Configurações.</span><button class="btn sm" data-tab="config">Configurar</button></div>`}</div>
   </div>`;
 }
@@ -285,6 +292,8 @@ function editarLoja(id) {
   sheet(`<h3>${c.id ? "Editar loja" : "Nova loja"}</h3>
     <p class="sub" style="margin:-4px 0 8px">${c.id ? "Dados usados nos cálculos de ROAS mínimo e custo máximo por pedido." : "Cadastre o restaurante e as contas de anúncio dele."}</p>
     <div class="field"><label for="lj-nome">Nome</label><input id="lj-nome" value="${esc(c.nome || "")}"></div>
+    <div class="field"><label>Foco</label><div class="pick" id="lj-foco">${[["comida", "Comida", "Restaurante vendendo pedidos"], ["servico", "Serviço", "Consultoria, gestão de tráfego, outros serviços"]].map(([v, t, s]) => `<button type="button" class="pk" data-lf="${v}" aria-pressed="${(c.foco || "comida") === v}"><b>${t}</b><small>${s}</small></button>`).join("")}</div></div>
+    <div class="field"><label for="lj-end">Endereço completo (para anunciar no raio)</label><input id="lj-end" placeholder="Rua, número, bairro, cidade - UF" value="${esc(c.endereco || "")}">${c.endereco ? `<span class="sub" style="margin:0">${c.lat != null ? "Localização encontrada no mapa." : "Não encontrei esse endereço no mapa. Confira rua, número e cidade."}</span>` : ""}</div>
     <div class="grid2"><div class="field"><label for="lj-cid">Cidade / bairro</label><input id="lj-cid" value="${esc(c.cidade || "")}"></div>
     <div class="field"><label for="lj-tk">Ticket médio (R$)</label><input id="lj-tk" type="number" inputmode="decimal" value="${esc(c.ticket || "")}"></div></div>
     <div class="field"><label for="lj-mg">Margem de contribuição antes da mídia (%)</label><input id="lj-mg" type="number" inputmode="decimal" placeholder="ex.: 28" value="${esc(c.margem || "")}"><span class="sub" style="margin:0">O que sobra do pedido depois de CMV, embalagem, taxas, entrega e impostos. Define o ROAS mínimo da loja.</span></div>
@@ -293,6 +302,8 @@ function editarLoja(id) {
     <div class="field"><label>Cor de identificação</label><div class="cores" id="lj-cor">${CORES.map((k) => `<button type="button" class="cor" data-cor="${k}" style="background:${k}" aria-label="Cor ${k}" aria-pressed="${k === cor}"></button>`).join("")}</div></div>
     <div class="row"><button class="btn pri" id="lj-ok">${c.id ? "Salvar alterações" : "Cadastrar loja"}</button><button class="btn" id="lj-x">Cancelar</button>${c.id ? `<button class="btn danger" id="lj-del" style="margin-left:auto">Excluir</button>` : ""}</div>`, (s) => {
     s.querySelector("#lj-x").onclick = closeSheet;
+    let foco = c.foco || "comida";
+    s.querySelector("#lj-foco").onclick = (e) => { const b = e.target.closest("[data-lf]"); if (!b) return; foco = b.dataset.lf; s.querySelectorAll("#lj-foco .pk").forEach((x) => x.setAttribute("aria-pressed", x === b)); };
     s.querySelector("#lj-cor").onclick = (e) => {
       const b = e.target.closest("[data-cor]");
       if (!b) return;
@@ -308,8 +319,8 @@ function editarLoja(id) {
     s.querySelector("#lj-ok").onclick = async () => {
       const v = (q) => s.querySelector(q).value;
       try {
-        await api("/api/clients", { id: c.id, nome: v("#lj-nome"), cidade: v("#lj-cid"), ticket: v("#lj-tk"), margem: v("#lj-mg"), metaAdAccountId: v("#lj-meta"), googleCustomerId: v("#lj-goo"), cor });
-        closeSheet(); toast(c.id ? "Loja salva" : "Loja cadastrada"); load(true);
+        const r = await api("/api/clients", { id: c.id, nome: v("#lj-nome"), cidade: v("#lj-cid"), ticket: v("#lj-tk"), margem: v("#lj-mg"), metaAdAccountId: v("#lj-meta"), googleCustomerId: v("#lj-goo"), cor, foco, endereco: v("#lj-end") });
+        closeSheet(); toast(r.endereco_ok === false ? "Salvo, mas não achei o endereço no mapa. Confira rua, número e cidade." : c.id ? "Loja salva" : "Loja cadastrada"); load(true);
       } catch (e) { toast(e.message); }
     };
   });
@@ -431,39 +442,168 @@ function abrirCampanha(id) {
       ${c.orcamento != null ? `<button class="btn pri" id="saveB">Salvar orçamento</button>` : ""}
       ${c.status === "ativa" ? `<button class="btn dng" id="tog">Pausar</button>` : c.status === "pausada" ? `<button class="btn" id="tog">Reativar</button>` : ""}
       <button class="btn" id="ask">Perguntar ao gestor IA</button>
+      <button class="btn dng" id="fin">Finalizar campanha</button>
     </div>`, (s) => {
+    s.querySelector("#fin").onclick = () => propor({ tipo: "finalizar", campanhaId: c.id });
     s.querySelector("#saveB") && (s.querySelector("#saveB").onclick = () => { const v = Number(s.querySelector("#budget").value); if (v === c.orcamento) return closeSheet(); propor({ tipo: "orcamento", campanhaId: c.id, dados: { orcamento: v } }); });
     s.querySelector("#tog") && (s.querySelector("#tog").onclick = () => propor({ tipo: c.status === "ativa" ? "pausar" : "ativar", campanhaId: c.id }));
     s.querySelector("#ask").onclick = () => { closeSheet(); perguntar(`O que eu faço com a campanha ${c.nome} (${cli(c.clientId).nome})?`); };
   });
 }
 
-function novaCampanha() {
-  const cid = state.client !== "todos" ? state.client : CLIENTES[0]?.id;
-  if (!cid) return toast("Cadastre uma loja primeiro.");
-  sheet(`<h3>Nova campanha</h3><div class="sub">Nasce pausada na plataforma; nada é gasto até você ativar.</div>
-    <div class="field"><label for="nc-cli">Loja</label><select id="nc-cli">${CLIENTES.map((c) => `<option value="${esc(c.id)}" ${c.id === cid ? "selected" : ""}>${esc(c.nome)}</option>`).join("")}</select></div>
-    <div class="grid2">
-      <div class="field"><label for="nc-plat">Plataforma</label><select id="nc-plat"><option value="meta">Meta (FB + IG)</option><option value="google">Google Ads</option></select></div>
-      <div class="field"><label for="nc-canal">Formato</label><select id="nc-canal"></select></div>
-    </div>
-    <div class="field"><label for="nc-nome">Nome</label><input id="nc-nome" value="Promo fim de semana"></div>
-    <div class="field"><label for="nc-obj">Objetivo</label><select id="nc-obj"><option>Pedidos no WhatsApp</option><option>Pedidos no iFood</option><option>Pedidos no site</option><option>Mensagens</option><option>Cadastro (lead)</option><option>Alcance local</option></select></div>
-    <div class="grid2">
-      <div class="field"><label for="nc-raio">Raio de entrega (km)</label><input id="nc-raio" type="number" inputmode="numeric" value="5" min="1" max="40"></div>
-      <div class="field"><label for="nc-orc">Orçamento/dia (R$)</label><input id="nc-orc" type="number" inputmode="numeric" value="40" min="6" step="5"></div>
-    </div>
-    <div class="field"><label for="nc-pub">Público</label><input id="nc-pub" value="18 a 55 anos, segmentação aberta no raio de entrega"></div>
-    <div class="row"><button class="btn pri" id="nc-ok">Revisar e criar</button><button class="btn" id="nc-ai">Pedir para o gestor IA montar</button><button class="btn" id="nc-x">Cancelar</button></div>`, (s) => {
-    const canais = { meta: ["Instagram + Facebook", "Instagram", "Facebook"], google: ["Pesquisa", "Performance Max", "Display"] };
-    const fill = () => { s.querySelector("#nc-canal").innerHTML = canais[s.querySelector("#nc-plat").value].map((x) => `<option>${x}</option>`).join(""); };
-    fill();
-    s.querySelector("#nc-plat").onchange = fill;
-    s.querySelector("#nc-x").onclick = closeSheet;
-    const v = (q) => s.querySelector(q).value;
-    s.querySelector("#nc-ai").onclick = () => { const nome = cli(v("#nc-cli")).nome; closeSheet(); perguntar(`Monta a melhor campanha para a ${nome} com até ${brl(v("#nc-orc"))} por dia.`); };
-    s.querySelector("#nc-ok").onclick = () => propor({ tipo: "criar", dados: { clientId: v("#nc-cli"), plataforma: v("#nc-plat"), canal: v("#nc-canal"), nome: v("#nc-nome"), objetivo: v("#nc-obj"), raio: v("#nc-raio"), orcamento: v("#nc-orc"), publico: v("#nc-pub") } });
-  });
+// ---------- Criar campanha (igual ao passo a passo da Meta e do Google) ----------
+const OBJ_META = [
+  ["whatsapp", "Conversas no WhatsApp", "A pessoa toca no anúncio e abre uma conversa com você."],
+  ["trafego", "Visitas ao site, cardápio ou iFood", "Leva para um link: iFood, cardápio online ou seu site."],
+  ["alcance", "Ser visto na região", "Mostra para o maior número de pessoas. Não traz pedidos diretos."],
+];
+const BOTOES = [["ORDER_NOW", "Pedir agora"], ["LEARN_MORE", "Saiba mais"], ["SHOP_NOW", "Comprar agora"], ["CONTACT_US", "Fale conosco"], ["SIGN_UP", "Cadastre-se"], ["BOOK_NOW", "Reservar"], ["GET_QUOTE", "Pedir orçamento"]];
+let NC = null, PAGINAS = null, DICAS = {};
+
+function novaCampanha(pre = {}, rascunhoId = null) {
+  if (ncInit(pre, rascunhoId)) { state.tab = "criar"; render(); window.scrollTo(0, 0); }
+}
+function ncInit(pre = {}, rascunhoId = null) {
+  const loja = CLIENTES.find((c) => c.id === (pre.clientId || (state.client !== "todos" ? state.client : ""))) || CLIENTES[0];
+  if (!loja) { toast("Cadastre uma loja primeiro em Lojas e contas."); return false; }
+  NC = { plataforma: loja.metaAdAccountId || !loja.googleCustomerId ? "meta" : "google", objetivo: "whatsapp", area: loja.foco === "servico" ? "brasil" : "raio", raio: 5, idadeMin: loja.foco === "servico" ? 25 : 18, idadeMax: 65,
+    posAuto: true, posicionamentos: [], interesses: [], botao: "ORDER_NOW", orcamento: 30, palavras: [], titulos: [], descricoes: [], ...pre, clientId: loja.id, rascunhoId };
+  if (pre.posicionamentos?.length) NC.posAuto = false;
+  if (!NC.nome) NC.nome = `${loja.nome} · ${new Date().toLocaleDateString("pt-BR")}`;
+  return true;
+}
+const ncLoja = () => cli(NC.clientId) || {};
+const ncFoco = () => (ncLoja().foco === "servico" ? "servico" : "comida");
+async function ncDicas() {
+  const f = ncFoco();
+  if (!DICAS[f]) { try { DICAS[f] = await api("/api/especialista?foco=" + f); } catch (_) { DICAS[f] = {}; } if (state.tab === "criar") render(); }
+  return DICAS[f];
+}
+const dica = (t) => (t ? `<div class="dica"><b>Dica do especialista</b>${esc(t)}</div>` : "");
+const passo = (n, titulo, corpo) => `<section class="card wz"><div class="wzh"><span class="wzn">${n}</span><b>${titulo}</b></div>${corpo}</section>`;
+
+function viewCriar() {
+  if (!NC) { ncInit(); if (!NC) return `<div class="empty">Cadastre uma loja primeiro.</div>`; }
+  const loja = ncLoja(), d = DICAS[ncFoco()] || (ncDicas(), {}), meta = NC.plataforma === "meta";
+  const cnt = (v, max) => `<span class="cnt">${String(v || "").length}/${max}</span>`;
+  const linhas = (arr) => esc((arr || []).join("\n"));
+  const topo = passo(1, "Onde anunciar", `
+    <div class="field"><label for="w-loja">Loja ou negócio</label><select id="w-loja">${CLIENTES.map((c) => `<option value="${esc(c.id)}" ${c.id === NC.clientId ? "selected" : ""}>${esc(c.nome)} · ${c.foco === "servico" ? "Serviço" : "Comida"}</option>`).join("")}</select></div>
+    <div class="pick">${[["meta", "Meta", "Facebook e Instagram"], ["google", "Google Ads", "Pesquisa no Google"]].map(([v, t, s]) => `<button type="button" class="pk" data-w-plat="${v}" aria-pressed="${NC.plataforma === v}"><b>${t}</b><small>${s}</small></button>`).join("")}</div>
+    ${meta && !loja.metaAdAccountId ? `<div class="aviso">Esta loja não tem conta de anúncio Meta. Cadastre em Lojas e contas.</div>` : ""}
+    ${!meta && !loja.googleCustomerId ? `<div class="aviso">Esta loja não tem ID de cliente Google Ads. Cadastre em Lojas e contas.</div>` : ""}
+    ${NC.motivo ? `<div class="dica"><b>Por que o gestor IA montou assim</b>${esc(NC.motivo)}</div>` : ""}`);
+  const campanha = passo(2, "Campanha", `
+    <div class="field"><label for="w-nome">Nome da campanha</label><input id="w-nome" value="${esc(NC.nome)}"></div>
+    ${meta ? `<div class="field"><label>Objetivo</label><div class="pick col">${OBJ_META.map(([v, t, s]) => `<button type="button" class="pk" data-w-obj="${v}" aria-pressed="${NC.objetivo === v}"><b>${t}</b><small>${s}</small></button>`).join("")}</div></div>${dica(d.objetivo?.[NC.objetivo])}` : `<p class="sub" style="margin:0">Tipo: <b>Pesquisa</b>, com lance para maximizar cliques. Aparece para quem procura no Google.</p>`}
+    <div class="field"><label for="w-orc">Orçamento diário (R$)</label><input id="w-orc" type="number" inputmode="numeric" min="6" step="5" value="${esc(NC.orcamento)}"><span class="sub" style="margin:0">Até ${brl((Number(NC.orcamento) || 0) * 30)} por mês.</span></div>
+    ${dica(d.orcamento)}`);
+  const publico = passo(3, meta ? "Público (conjunto de anúncios)" : "Região e palavras-chave", `
+    <div class="field"><label>Onde</label><div class="pick">${[["raio", "Raio em volta da loja", loja.endereco ? loja.endereco : "Cadastre o endereço da loja"], ["brasil", "Brasil inteiro", "Bom para venda de serviço"]].map(([v, t, s]) => `<button type="button" class="pk" data-w-area="${v}" aria-pressed="${NC.area === v}"><b>${t}</b><small>${esc(s)}</small></button>`).join("")}</div></div>
+    ${NC.area === "raio" ? `<div class="field"><label for="w-raio">Raio (km)</label><input id="w-raio" type="number" min="1" max="40" value="${esc(NC.raio)}"></div>${loja.lat == null ? `<div class="aviso">Falta o endereço da loja para anunciar no raio. Cadastre em Lojas e contas.</div>` : ""}` : ""}
+    ${meta ? `<div class="grid2"><div class="field"><label for="w-imin">Idade mínima</label><input id="w-imin" type="number" min="18" max="65" value="${esc(NC.idadeMin)}"></div><div class="field"><label for="w-imax">Idade máxima</label><input id="w-imax" type="number" min="18" max="65" value="${esc(NC.idadeMax)}"></div></div>
+      <div class="field"><label for="w-int">Interesses (opcional, um por linha)</label><textarea id="w-int" rows="3" placeholder="Ex.: Restaurante&#10;iFood&#10;Empreendedorismo">${linhas(NC.interesses)}</textarea></div>
+      ${dica(d.publico)}
+      <div class="field"><label>Posicionamentos</label><div class="pick">${[["auto", "Automático (Advantage+)"], ["manual", "Escolher"]].map(([v, t]) => `<button type="button" class="pk" data-w-pos="${v}" aria-pressed="${(v === "auto") === NC.posAuto}"><b>${t}</b></button>`).join("")}</div>
+      ${NC.posAuto ? "" : `<div class="row">${[["feed", "Feed"], ["stories", "Stories"], ["reels", "Reels"]].map(([v, t]) => `<button type="button" class="chip" data-w-pp="${v}" aria-pressed="${NC.posicionamentos.includes(v)}">${t}</button>`).join("")}</div>`}</div>
+      ${dica(d.posicionamentos)}`
+    : `<div class="field"><label for="w-pal">Palavras-chave (uma por linha, mín. 3)</label><textarea id="w-pal" rows="5" placeholder="hamburguer delivery&#10;hamburgueria perto de mim">${linhas(NC.palavras)}</textarea></div>${dica(d.palavras)}`}`);
+  const anuncio = meta ? passo(4, "Anúncio", `
+    <div class="field"><label for="w-pag">Página do Facebook (identidade)</label><select id="w-pag">${PAGINAS ? PAGINAS.map((p) => `<option value="${esc(p.id)}" ${p.id === NC.paginaId ? "selected" : ""}>${esc(p.nome)}${p.instagram ? " · @" + esc(p.instagram) : ""}</option>`).join("") : `<option>Carregando páginas...</option>`}</select>${PAGINAS && !PAGINAS.length ? `<span class="sub" style="margin:0">Nenhuma página encontrada. Atribua a página ao usuário do sistema no Business Manager.</span>` : ""}</div>
+    <div class="field"><label>Foto (JPG ou PNG, quadrada 1080×1080 ou vertical 1080×1350)</label>
+      <div class="foto">${NC.imagemUrl ? `<img src="${esc(NC.imagemUrl)}" alt="">` : `<span>Nenhuma foto</span>`}<label class="btn sm" for="w-img">${NC.imagemUrl ? "Trocar foto" : "Escolher foto"}</label><input id="w-img" type="file" accept="image/jpeg,image/png" hidden></div></div>
+    ${dica(d.foto)}
+    <div class="field"><label for="w-txt">Texto principal ${cnt(NC.texto, 125)}</label><textarea id="w-txt" rows="4" placeholder="O que aparece acima da foto">${esc(NC.texto || "")}</textarea><span class="sub" style="margin:0">Até 125 letras aparecem sem o "ver mais".</span></div>
+    ${dica(d.texto)}
+    ${d.ganchos?.length ? `<div class="field"><label>Ganchos da base (toque para usar)</label><div class="row">${d.ganchos.slice(0, 6).map((g) => `<button type="button" class="chip" data-w-gancho="${esc(g)}">${esc(g)}</button>`).join("")}</div></div>` : ""}
+    ${d.exemplos?.length ? `<div class="field"><label>Textos prontos da base (toque para usar)</label><div class="pick col">${d.exemplos.slice(0, 5).map((x) => `<button type="button" class="pk" data-w-ex="${esc(x)}"><small style="color:var(--fg)">${esc(x)}</small></button>`).join("")}</div></div>` : ""}
+    <div class="field"><label for="w-tit">Título ${cnt(NC.titulo, 40)}</label><input id="w-tit" value="${esc(NC.titulo || "")}" placeholder="Ex.: Smash duplo + fritas"></div>
+    <div class="field"><label for="w-desc">Descrição (opcional)</label><input id="w-desc" value="${esc(NC.descricao || "")}"></div>
+    ${NC.objetivo === "whatsapp" ? `<p class="sub" style="margin:0">Botão: <b>Enviar mensagem no WhatsApp</b> (o WhatsApp ligado à página).</p>` : `
+      <div class="grid2"><div class="field"><label for="w-bot">Botão</label><select id="w-bot">${BOTOES.map(([v, t]) => `<option value="${v}" ${v === NC.botao ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+      <div class="field"><label for="w-link">Link de destino</label><input id="w-link" type="url" placeholder="https://" value="${esc(NC.link || "")}"></div></div>`}`)
+  : passo(4, "Anúncio de pesquisa", `
+    <div class="field"><label for="w-tits">Títulos (um por linha, 3 a 15, até 30 letras)</label><textarea id="w-tits" rows="6">${linhas(NC.titulos)}</textarea>${(NC.titulos || []).filter((x) => x.length > 30).length ? `<span class="aviso">Há título com mais de 30 letras.</span>` : ""}</div>
+    ${dica(d.titulos)}
+    <div class="field"><label for="w-descs">Descrições (uma por linha, 2 a 4, até 90 letras)</label><textarea id="w-descs" rows="4">${linhas(NC.descricoes)}</textarea>${(NC.descricoes || []).filter((x) => x.length > 90).length ? `<span class="aviso">Há descrição com mais de 90 letras.</span>` : ""}</div>
+    ${dica(d.descricoes)}
+    <div class="field"><label for="w-link">Link de destino</label><input id="w-link" type="url" placeholder="https://" value="${esc(NC.link || "")}"></div>`);
+  const pagina = (PAGINAS || []).find((p) => p.id === NC.paginaId);
+  const bot = NC.objetivo === "whatsapp" ? "WhatsApp" : (BOTOES.find(([v]) => v === NC.botao) || [, "Saiba mais"])[1];
+  const prev = meta ? `<div class="prev ig"><div class="ph"><i></i><b>${esc(pagina?.instagram || pagina?.nome || loja.nome)}</b><small>Patrocinado</small></div>
+      <div class="pimg">${NC.imagemUrl ? `<img src="${esc(NC.imagemUrl)}" alt="">` : `<span>Sua foto aqui</span>`}</div>
+      <div class="pcta"><span>${esc(NC.titulo || "Título do anúncio")}</span><b>${esc(bot)}</b></div>
+      <p>${esc((NC.texto || "Texto principal do anúncio").slice(0, 125))}${(NC.texto || "").length > 125 ? "… <i>mais</i>" : ""}</p></div>`
+    : `<div class="prev gg"><small>Patrocinado</small><div class="gurl">${esc((NC.link || "https://seusite.com.br").replace(/^https?:\/\//, "").split("/")[0])}</div>
+      <div class="gtit">${esc((NC.titulos || []).slice(0, 3).join(" | ") || "Título 1 | Título 2 | Título 3")}</div><p>${esc((NC.descricoes || [])[0] || "Descrição do anúncio")}</p></div>`;
+  return `<div class="wiz"><div class="wzc">${topo}${campanha}${publico}${anuncio}
+    <div class="row"><button class="btn pri" id="w-ok">Revisar e criar</button>${IA ? `<button class="btn" id="w-ia">Pedir para o gestor IA montar</button>` : ""}<button class="btn" id="w-x">Cancelar</button></div>
+    <p class="sub">A campanha nasce <b>pausada</b>, com tudo pronto. Só começa a gastar quando você reativar.</p></div>
+    <aside class="wzp"><b class="sub" style="display:block;margin:0 0 8px">Prévia</b>${prev}</aside></div>`;
+}
+
+function lerNC() {
+  const q = (s) => $("#view").querySelector(s), v = (s) => q(s)?.value, ls = (s) => (v(s) || "").split("\n").map((x) => x.trim()).filter(Boolean);
+  if (q("#w-nome")) NC.nome = v("#w-nome");
+  if (q("#w-orc")) NC.orcamento = v("#w-orc");
+  if (q("#w-raio")) NC.raio = v("#w-raio");
+  if (q("#w-imin")) { NC.idadeMin = v("#w-imin"); NC.idadeMax = v("#w-imax"); }
+  if (q("#w-int")) NC.interesses = ls("#w-int");
+  if (q("#w-pal")) NC.palavras = ls("#w-pal");
+  if (q("#w-pag")) { NC.paginaId = v("#w-pag"); }
+  if (q("#w-txt")) { NC.texto = v("#w-txt"); NC.titulo = v("#w-tit"); NC.descricao = v("#w-desc"); }
+  if (q("#w-bot")) NC.botao = v("#w-bot");
+  if (q("#w-link")) NC.link = v("#w-link");
+  if (q("#w-tits")) { NC.titulos = ls("#w-tits"); NC.descricoes = ls("#w-descs"); }
+}
+async function carregarPaginas() {
+  if (PAGINAS) return;
+  try { PAGINAS = await api("/api/meta/paginas"); } catch (e) { PAGINAS = []; toast(e.message); }
+  if (NC && !NC.paginaId && PAGINAS[0]) NC.paginaId = PAGINAS[0].id;
+  if (state.tab === "criar") render();
+}
+function criarHandlers() {
+  const view = $("#view");
+  if (NC?.plataforma === "meta") carregarPaginas();
+  view.onclick = async (e) => {
+    const b = e.target.closest("[data-w-plat],[data-w-obj],[data-w-area],[data-w-pos],[data-w-pp],[data-w-gancho],[data-w-ex],#w-ok,#w-x,#w-ia");
+    if (!b) return;
+    lerNC();
+    if (b.dataset.wPlat) NC.plataforma = b.dataset.wPlat;
+    else if (b.dataset.wObj) NC.objetivo = b.dataset.wObj;
+    else if (b.dataset.wArea) NC.area = b.dataset.wArea;
+    else if (b.dataset.wPos) NC.posAuto = b.dataset.wPos === "auto";
+    else if (b.dataset.wPp) { const p = b.dataset.wPp; NC.posicionamentos = NC.posicionamentos.includes(p) ? NC.posicionamentos.filter((x) => x !== p) : [...NC.posicionamentos, p]; }
+    else if (b.dataset.wEx) NC.texto = b.dataset.wEx;
+    else if (b.dataset.wGancho) NC.texto = b.dataset.wGancho + (NC.texto ? "\n" + NC.texto : "");
+    else if (b.id === "w-x") { NC = null; state.tab = "campanhas"; return render(); }
+    else if (b.id === "w-ia") { const l = ncLoja(); NC = null; return perguntar(`Monta a melhor campanha para ${l.nome} no ${b.dataset.p || "Meta"} com até R$ 30 por dia, seguindo a base do foco da loja.`); }
+    else if (b.id === "w-ok") {
+      const dados = { ...NC, posicionamentos: NC.posAuto ? [] : NC.posicionamentos, pagina: (PAGINAS || []).find((p) => p.id === NC.paginaId)?.nome, instagramId: (PAGINAS || []).find((p) => p.id === NC.paginaId)?.instagramId || "" };
+      const r = await propor({ tipo: "criar", dados });
+      if (r?.confirmado) { if (NC.rascunhoId) api(`/api/rascunhos/${NC.rascunhoId}/descartar`, {}).catch(() => {}); NC = null; state.tab = "campanhas"; render(); }
+      return;
+    }
+    render();
+  };
+  view.oninput = (e) => {
+    if (!e.target.closest(".wzc")) return;
+    lerNC();
+    const p = view.querySelector(".wzp");
+    if (p) { const tmp = document.createElement("div"); tmp.innerHTML = viewCriar(); p.innerHTML = tmp.querySelector(".wzp").innerHTML; }
+  };
+  view.onchange = async (e) => {
+    if (e.target.id === "w-loja") { lerNC(); const { clientId: _c, rascunhoId: rid, ...pre } = NC; ncInit({ ...pre, clientId: e.target.value }, rid); render(); return; }
+    if (e.target.id === "w-pag") { lerNC(); render(); return; }
+    if (e.target.id === "w-img") {
+      const f = e.target.files[0]; if (!f) return;
+      if (f.size > 8 * 1024 * 1024) return toast("A foto passa de 8 MB. Use uma menor.");
+      lerNC(); toast("Enviando foto...");
+      const dataUrl = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(f); });
+      try { const r = await api("/api/imagens", { dados: dataUrl, nome: f.name }); NC.imagemId = r.id; NC.imagemUrl = r.url; render(); }
+      catch (err) { toast(err.message); }
+    }
+  };
 }
 
 function relatorio() {
@@ -601,6 +741,9 @@ function handleClick(e) {
   if (d.act === "novaloja") return editarLoja("");
   if (d.salvar) return salvarGrupo(d.salvar);
   if (d.act === "claudeapp") return conectarClaudeApp();
+  if (d.rasc) { const r = RASCUNHOS.find((x) => x.id === d.rasc); return r && novaCampanha(r.dados, r.id); }
+  if (d.rascx) return api(`/api/rascunhos/${d.rascx}/descartar`, {}).then(() => load()).catch((err) => toast(err.message));
+  if (d.foco) { state.foco = d.foco; try { localStorage.setItem("tf_foco", d.foco); } catch (_) {} if (state.client !== "todos" && !lojasDoFoco().some((c) => c.id === state.client)) state.client = "todos"; return render(); }
   if (d.pend) { const a = PENDENTES.find((x) => x.id === d.pend); return a && confirmar(a).then(() => load()); }
   if (d.diag) { const p = JSON.parse(d.diag); return propor({ tipo: p.tipo, campanhaId: p.c, dados: { orcamento: p.orcamento, motivo: "Diagnóstico automático" } }).then(() => { DIAG = null; }); }
   if (d.copiar) { const i = $("#" + d.copiar); return navigator.clipboard.writeText(i.value).then(() => toast("Copiado")).catch(() => { i.select(); }); }
@@ -614,7 +757,8 @@ for (const sel of ["#side", "#view", "#tabs"]) $(sel).addEventListener("click", 
 
 function render() {
   renderFilters();
-  $("#view").innerHTML = { painel: viewPainel, campanhas: viewCampanhas, copiloto: viewCopiloto, clientes: viewClientes, config: viewConfig }[state.tab]();
+  $("#view").innerHTML = { painel: viewPainel, campanhas: viewCampanhas, copiloto: viewCopiloto, clientes: viewClientes, config: viewConfig, criar: viewCriar }[state.tab]();
+  if (state.tab === "criar") criarHandlers(); else { $("#view").onclick = $("#view").oninput = $("#view").onchange = null; }
   $("#pageTitle").textContent = TITULOS[state.tab];
   document.querySelectorAll("#tabs button,#snav button").forEach((b) => b.setAttribute("aria-current", b.dataset.tab === state.tab ? "page" : "false"));
   $("#composer").hidden = state.tab !== "copiloto" || !IA;

@@ -4,10 +4,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
-import { campaigns, propose } from "./actions.js";
+import { campaigns, propose, salvarRascunho } from "./actions.js";
 import { store } from "./store.js";
 import { ROOT } from "./paths.js";
 import { diagnosticar } from "./diagnostico.js";
+import { BASES } from "./especialista.js";
 
 // Recriado quando a chave muda pela tela Configurações.
 let client, chaveAtual;
@@ -38,8 +39,13 @@ Como agir no sistema:
 - Se o pedido servir para mais de uma campanha e não estiver claro qual, pergunte antes.
 - Receita marcada como estimada (pedidos × ticket) não é prova de lucro; avise quando isso importar.
 
-BASE DE CONHECIMENTO DELIVEFOOD (dados de referência, versão ${BASE.metadata.versao}):
-${JSON.stringify(BASE_PROMPT)}`;
+Dois focos: cada loja ou negócio tem foco "comida" (restaurante vendendo pedidos) ou "servico" (venda de serviço, como a própria consultoria Delivefood e a gestão de tráfego que ela vende). buscar_campanhas traz o foco. Para foco comida use a BASE DE RESTAURANTES; para foco servico use a BASE DE SERVIÇOS, onde "pedidos" significam contatos/leads e o que importa é custo por contato qualificado, reunião e contrato.
+
+BASE DE RESTAURANTES (versão ${BASE.metadata.versao}):
+${JSON.stringify(BASE_PROMPT)}
+${BASES.servico ? `
+BASE DE SERVIÇOS (versão ${BASES.servico.metadata?.versao || "1"}):
+${JSON.stringify(BASES.servico)}` : ""}`;
 
 export const TOOLS = [
   {
@@ -69,6 +75,11 @@ export const TOOLS = [
     input_schema: { type: "object", properties: { campanha_id: { type: "string" }, motivo: { type: "string" } }, required: ["campanha_id"] },
   },
   {
+    name: "propor_finalizar",
+    description: "Cria uma proposta para FINALIZAR (encerrar de vez) uma campanha: arquiva na Meta ou remove no Google Ads, sem volta. Use só quando a pessoa pedir para finalizar ou encerrar. A pessoa confirma na tela.",
+    input_schema: { type: "object", properties: { campanha_id: { type: "string" }, motivo: { type: "string" } }, required: ["campanha_id"] },
+  },
+  {
     name: "propor_orcamento",
     description: "Cria uma proposta para mudar o orçamento diário (em reais) de uma campanha. A pessoa confirma na tela.",
     input_schema: {
@@ -78,20 +89,31 @@ export const TOOLS = [
     },
   },
   {
-    name: "propor_campanha",
-    description: "Cria uma proposta de campanha nova (nasce pausada na plataforma). formato: Instagram + Facebook, Instagram, Facebook, Pesquisa ou Performance Max. objetivo: Pedidos no WhatsApp, Pedidos no iFood, Pedidos no site, Mensagens, Cadastro (lead) ou Alcance local.",
+    name: "montar_campanha",
+    description: "Monta uma campanha nova completa, no formato que a plataforma pede, e deixa como RASCUNHO no TrafgFood. A pessoa abre o rascunho, escolhe a foto (Meta), revisa e cria; a campanha nasce pausada. Meta: objetivo whatsapp (conversas no WhatsApp), trafego (visitas ao site, cardápio ou iFood; exige link) ou alcance. Google: campanha de Pesquisa com palavras-chave (mín. 3), títulos (3 a 15, até 30 caracteres) e descrições (2 a 4, até 90 caracteres) e link. area: raio (em volta da loja) ou brasil (bom para venda de serviço). Siga o framework de criativos da base do foco da loja.",
     input_schema: {
       type: "object",
       properties: {
         loja_id: { type: "string" },
         plataforma: { type: "string", enum: ["meta", "google"] },
-        formato: { type: "string" },
         nome: { type: "string" },
-        objetivo: { type: "string" },
+        objetivo: { type: "string", enum: ["whatsapp", "trafego", "alcance"] },
         orcamento_dia: { type: "number" },
+        area: { type: "string", enum: ["raio", "brasil"] },
         raio_km: { type: "number" },
-        publico: { type: "string" },
-        texto_anuncio: { type: "string" },
+        idade_min: { type: "number" },
+        idade_max: { type: "number" },
+        interesses: { type: "array", items: { type: "string" }, description: "Meta: interesses em português, opcional" },
+        posicionamentos: { type: "array", items: { type: "string", enum: ["feed", "stories", "reels"] }, description: "vazio = automático" },
+        texto: { type: "string", description: "Meta: texto principal" },
+        titulo: { type: "string", description: "Meta: título curto" },
+        descricao: { type: "string" },
+        botao: { type: "string", enum: ["ORDER_NOW", "LEARN_MORE", "SHOP_NOW", "SIGN_UP", "CONTACT_US", "BOOK_NOW", "GET_QUOTE"] },
+        link: { type: "string" },
+        palavras: { type: "array", items: { type: "string" } },
+        titulos: { type: "array", items: { type: "string" } },
+        descricoes: { type: "array", items: { type: "string" } },
+        motivo: { type: "string", description: "por que essa estrutura, em 1 a 2 frases" },
       },
       required: ["loja_id", "plataforma", "nome", "orcamento_dia"],
     },
@@ -102,6 +124,7 @@ function resumoCampanha(c) {
   return {
     id: c.id,
     loja_id: c.clientId,
+    foco: store.get().clients.find((x) => x.id === c.clientId)?.foco || "comida",
     plataforma: c.plataforma,
     formato: c.canal,
     nome: c.nome,
@@ -143,31 +166,23 @@ export async function runTool(name, input, proposals = [], origem = "gestor IA")
     }
     case "propor_pausa":
     case "propor_reativar":
+    case "propor_finalizar":
     case "propor_orcamento": {
-      const tipo = { propor_pausa: "pausar", propor_reativar: "ativar", propor_orcamento: "orcamento" }[name];
+      const tipo = { propor_pausa: "pausar", propor_reativar: "ativar", propor_finalizar: "finalizar", propor_orcamento: "orcamento" }[name];
       const a = await propose({ tipo, campanhaId: String(input.campanha_id), dados: { orcamento: input.orcamento_dia, motivo: input.motivo }, origem });
       proposals.push(a);
       return { proposta: a.id, situacao: "aguardando confirmação da pessoa na tela" };
     }
-    case "propor_campanha": {
-      const plataforma = input.plataforma === "google" ? "google" : "meta";
-      const a = await propose({
-        tipo: "criar",
-        dados: {
-          clientId: String(input.loja_id),
-          plataforma,
-          canal: String(input.formato || (plataforma === "google" ? "Pesquisa" : "Instagram + Facebook")),
-          nome: String(input.nome),
-          objetivo: String(input.objetivo || "Pedidos no WhatsApp"),
-          orcamento: Number(input.orcamento_dia),
-          raio: Number(input.raio_km) || 5,
-          publico: String(input.publico || ""),
-          texto: String(input.texto_anuncio || ""),
-        },
-        origem,
-      });
-      proposals.push(a);
-      return { proposta: a.id, situacao: "aguardando confirmação da pessoa na tela" };
+    case "montar_campanha": {
+      const loja = store.get().clients.find((c) => c.id === String(input.loja_id));
+      if (!loja) throw new Error("Loja não encontrada. Use buscar_campanhas para ver os ids das lojas.");
+      const r = salvarRascunho({
+        clientId: loja.id, plataforma: input.plataforma === "google" ? "google" : "meta", nome: input.nome, objetivo: input.objetivo || "whatsapp",
+        orcamento: input.orcamento_dia, area: input.area || "raio", raio: input.raio_km || 5, idadeMin: input.idade_min, idadeMax: input.idade_max,
+        interesses: input.interesses || [], posicionamentos: input.posicionamentos || [], texto: input.texto, titulo: input.titulo, descricao: input.descricao,
+        botao: input.botao, link: input.link, palavras: input.palavras || [], titulos: input.titulos || [], descricoes: input.descricoes || [], motivo: input.motivo,
+      }, origem);
+      return { rascunho: r.id, situacao: "Rascunho salvo no TrafgFood (Painel > Campanhas montadas pelo gestor). A pessoa escolhe a foto, revisa e cria; nasce pausada." };
     }
     default:
       throw new Error("Ferramenta desconhecida: " + name);

@@ -1,0 +1,987 @@
+{
+ "metadata": {
+  "titulo": "Base de Conhecimento de Tráfego Pago para Venda de Serviços (B2B e Serviços Locais)",
+  "marca": "Delivefood",
+  "idioma": "pt-BR",
+  "versao": "1.0.0",
+  "data_atualizacao": "2026-10-09",
+  "finalidade": "Alimentar um gestor de tráfego com IA que opera Meta Ads e Google Ads para vender serviços — com foco na Delivefood Consultoria (consultoria de delivery e gestão de tráfego para donos de restaurantes) e aplicável a agências, consultores, clínicas e profissionais locais.",
+  "publico_alvo": [
+   "equipe comercial e de marketing Delivefood",
+   "consultores e agências",
+   "clínicas e prestadores de serviço locais"
+  ],
+  "aviso": "Números desta base são faixas ou hipóteses, nunca benchmarks garantidos. Validar sempre com dados da própria conta e do CRM. Recursos e regras das plataformas mudam: confirmar na central de ajuda oficial antes de afirmar requisitos."
+ },
+ "configuracao_do_especialista": {
+  "nome": "Especialista Delivefood em Tráfego para Serviços",
+  "posicionamento": "Gestor de tráfego sênior focado em geração de demanda e leads qualificados para empresas que vendem serviços, especialmente consultoria para restaurantes e delivery no Brasil.",
+  "missao": "Transformar investimento em mídia em reuniões, propostas e contratos lucrativos — não em leads baratos que o comercial não fecha.",
+  "dominios": [
+   "Meta Ads (cadastros, mensagens/WhatsApp, Advantage+)",
+   "Google Ads (Pesquisa, recursos de formulário, Performance Max)",
+   "rastreamento: Pixel, API de Conversões, tag do Google, conversões otimizadas para leads",
+   "importação de conversões offline e CRM",
+   "qualificação de leads e processo comercial via WhatsApp",
+   "oferta, landing page e copy para B2B",
+   "unit economics: CPL, CAC, LTV, payback"
+  ],
+  "postura": [
+   "Direto, analítico e comercial.",
+   "Medir sucesso pelo custo por lead qualificado, reunião e contrato, não pelo CPL bruto.",
+   "Separar fato, inferência, hipótese e recomendação.",
+   "Mostrar cálculos e premissas.",
+   "Adaptar ao Brasil: BRL, WhatsApp como canal principal, LGPD.",
+   "Nunca prometer resultado nem garantir faturamento ao cliente."
+  ],
+  "prompt_base": "Você é o Especialista Delivefood em Tráfego para Serviços. Seu objetivo é gerar contratos lucrativos para quem vende serviços (consultoria de delivery, gestão de tráfego, agências, clínicas, profissionais locais). Antes de recomendar campanhas, entenda serviço, ticket, margem, taxa de fechamento, ciclo de venda, capacidade de atendimento do comercial, praça, histórico e rastreamento. Calcule CPL máximo e custo máximo por reunião. Prefira otimizar para eventos de fundo de funil (lead qualificado, reunião, contrato) assim que houver volume. Exija velocidade de resposta e registro no CRM. Não invente dados nem benchmarks; marque números como hipóteses e diga como validar.",
+  "formato_padrao_de_resposta": [
+   "Diagnóstico",
+   "Objetivo e hipótese",
+   "Oferta de entrada",
+   "Canais e campanhas",
+   "Públicos e palavras-chave",
+   "Criativos e copy",
+   "Orçamento e distribuição",
+   "Rastreamento e CRM",
+   "Regras de decisão",
+   "Próximos testes e riscos"
+  ]
+ },
+ "principios_centrais": [
+  {
+   "id": "PS01",
+   "titulo": "Lead não é venda",
+   "conteudo": "Leads baratos frequentemente têm baixa qualificação. O que paga a mídia é contrato fechado com margem.",
+   "acao_da_ia": "Avaliar campanhas por custo por lead qualificado, por reunião realizada e por contrato; nunca escalar só por CPL baixo."
+  },
+  {
+   "id": "PS02",
+   "titulo": "Oferta de entrada antes de criativo",
+   "conteudo": "Serviço é intangível e de confiança. Uma oferta de entrada de baixo risco (diagnóstico, auditoria, aula) reduz atrito e qualifica.",
+   "acao_da_ia": "Definir a oferta de entrada e a promessa específica antes de escrever anúncios."
+  },
+  {
+   "id": "PS03",
+   "titulo": "Velocidade de resposta é parte da mídia",
+   "conteudo": "Lead respondido tarde esfria; o custo da mídia é desperdiçado se o comercial não atende rápido.",
+   "acao_da_ia": "Verificar SLA de primeiro contato e capacidade do comercial antes de aumentar verba."
+  },
+  {
+   "id": "PS04",
+   "titulo": "Devolver qualidade para o algoritmo",
+   "conteudo": "Meta e Google otimizam para o evento informado. Se só recebem 'lead', buscam mais leads, não melhores leads.",
+   "acao_da_ia": "Implantar API de Conversões/CRM na Meta e conversões offline ou conversões otimizadas para leads no Google, enviando etapas como lead qualificado e contrato."
+  },
+  {
+   "id": "PS05",
+   "titulo": "Intenção primeiro, demanda depois",
+   "conteudo": "Google Pesquisa captura quem já procura solução; Meta cria demanda em quem tem a dor mas não procura.",
+   "acao_da_ia": "Com verba pequena, priorizar busca de alta intenção + remarketing; usar Meta para escala e prova social."
+  },
+  {
+   "id": "PS06",
+   "titulo": "Prova vence promessa",
+   "conteudo": "Donos de restaurante desconfiam de promessas de faturamento. Casos reais, números com contexto e depoimentos convertem melhor que adjetivos.",
+   "acao_da_ia": "Pedir provas disponíveis (cases, prints autorizados, depoimentos) e usá-las nos criativos sem exagero."
+  },
+  {
+   "id": "PS07",
+   "titulo": "Consentimento e LGPD",
+   "conteudo": "Coleta de dados pessoais exige transparência e política de privacidade; plataformas exigem link de privacidade nos formulários.",
+   "acao_da_ia": "Sempre incluir política de privacidade, coletar só o necessário e não sugerir listas compradas."
+  }
+ ],
+ "dados_minimos_do_negocio": [
+  "serviço vendido, entregáveis e oferta de entrada",
+  "ticket (setup + mensalidade) e margem",
+  "tempo médio de contrato (para LTV)",
+  "taxa histórica lead→reunião→contrato",
+  "ciclo de venda médio em dias",
+  "capacidade semanal de reuniões e de novos clientes",
+  "perfil de cliente ideal (ICP): segmento, porte, faturamento, cidade, canal (iFood, próprio)",
+  "região atendida (nacional, remoto ou local)",
+  "cases, depoimentos e provas",
+  "site/landing page, WhatsApp Business e CRM usados",
+  "rastreamento existente: Pixel, API de Conversões, tag do Google, UTMs",
+  "histórico de mídia e verba disponível"
+ ],
+ "canais": [
+  {
+   "canal": "Google Ads — Pesquisa",
+   "melhor_uso": "Capturar demanda ativa: 'consultoria para delivery', 'gestão de tráfego para restaurante', serviços locais.",
+   "formatos_prioritarios": [
+    "anúncios responsivos de pesquisa (até 15 títulos de 30 caracteres e 4 descrições de 90)",
+    "recursos de formulário de lead",
+    "sitelinks, frase de destaque, chamada"
+   ],
+   "cuidados": [
+    "volume de busca B2B nichado é pequeno",
+    "negativar termos de emprego, curso grátis, vagas, 'o que é'",
+    "correspondência ampla só com Lances Inteligentes e conversões confiáveis"
+   ]
+  },
+  {
+   "canal": "Google Ads — Performance Max",
+   "melhor_uso": "Ampliar volume depois que Pesquisa e rastreamento de lead qualificado estiverem validados.",
+   "formatos_prioritarios": [
+    "grupos de recursos com vídeo, imagem e texto",
+    "sinais de público com lista de clientes",
+    "formulário de lead"
+   ],
+   "cuidados": [
+    "otimizar para meta de lead qualificado, não envio bruto",
+    "usar exclusões de marca se necessário",
+    "dar 1–2 semanas (até 6 com pouco volume) antes de grandes mudanças, conforme guia do Google"
+   ]
+  },
+  {
+   "canal": "Meta Ads — Cadastros (formulário instantâneo)",
+   "melhor_uso": "Gerar volume de leads com baixo atrito no Facebook/Instagram.",
+   "formatos_prioritarios": [
+    "Reels e Stories com especialista falando",
+    "carrossel de cases",
+    "formulário de maior intenção com perguntas qualificadoras"
+   ],
+   "cuidados": [
+    "formulário 'mais volume' tende a trazer leads frios",
+    "conectar ao CRM para resposta imediata",
+    "enviar status de qualificação de volta via API de Conversões"
+   ]
+  },
+  {
+   "canal": "Meta Ads — Mensagens para WhatsApp",
+   "melhor_uso": "Conversa direta com dono de restaurante, que já vive no WhatsApp.",
+   "formatos_prioritarios": [
+    "vídeo curto com CTA 'Enviar mensagem'",
+    "mensagem de boas-vindas com perguntas rápidas"
+   ],
+   "cuidados": [
+    "exige atendimento rápido e roteiro",
+    "medir conversas qualificadas, não só iniciadas",
+    "registrar origem no CRM"
+   ]
+  },
+  {
+   "canal": "Meta Ads — Site/Landing page",
+   "melhor_uso": "Oferta mais densa (aula, diagnóstico com agendamento) e públicos mais qualificados.",
+   "formatos_prioritarios": [
+    "vídeo depoimento",
+    "imagem com número de case",
+    "anúncio de autoridade"
+   ],
+   "cuidados": [
+    "Pixel + API de Conversões com deduplicação",
+    "página rápida no celular"
+   ]
+  },
+  {
+   "canal": "Remarketing (Meta e Google)",
+   "melhor_uso": "Recuperar visitantes, engajados em vídeo/perfil e leads não convertidos.",
+   "formatos_prioritarios": [
+    "prova social",
+    "objeções respondidas",
+    "convite para diagnóstico"
+   ],
+   "cuidados": [
+    "controlar frequência",
+    "excluir clientes atuais"
+   ]
+  }
+ ],
+ "objetivos_e_quando_usar": [
+  {
+   "objetivo": "Mensagens para WhatsApp",
+   "plataforma": "Meta (objetivo Engajamento ou Cadastros com destino de mensagens)",
+   "quando_usar": "Ticket médio/baixo, venda consultiva rápida, comercial disponível para responder em minutos.",
+   "evento_de_otimizacao": "conversas iniciadas; quando possível, leads qualificados via API de Conversões",
+   "metricas": [
+    "custo por conversa",
+    "% conversas qualificadas",
+    "custo por reunião"
+   ]
+  },
+  {
+   "objetivo": "Formulário instantâneo",
+   "plataforma": "Meta (objetivo Cadastros)",
+   "quando_usar": "Quer volume e tem processo de ligação/WhatsApp rápido; landing page fraca ou inexistente.",
+   "evento_de_otimizacao": "lead; evoluir para leads de conversão (CRM) quando houver volume",
+   "metricas": [
+    "CPL",
+    "taxa de contato",
+    "% qualificado",
+    "custo por lead qualificado"
+   ]
+  },
+  {
+   "objetivo": "Site/landing page",
+   "plataforma": "Meta (Cadastros com destino site) e Google Pesquisa",
+   "quando_usar": "Oferta exige explicação, agendamento online ou material; rastreamento funcional.",
+   "evento_de_otimizacao": "Lead / agendamento (Schedule) / evento personalizado de qualificação",
+   "metricas": [
+    "taxa de conversão da página",
+    "CPL",
+    "custo por agendamento"
+   ]
+  },
+  {
+   "objetivo": "Remarketing",
+   "plataforma": "Meta e Google",
+   "quando_usar": "Já existe tráfego, visualizações de vídeo ou leads não fechados.",
+   "evento_de_otimizacao": "lead ou mensagem, com públicos personalizados",
+   "metricas": [
+    "custo por reunião de remarketing",
+    "frequência",
+    "taxa de recuperação"
+   ]
+  },
+  {
+   "objetivo": "Pesquisa (intenção)",
+   "plataforma": "Google Ads",
+   "quando_usar": "Sempre que houver busca pelo serviço na praça ou no país.",
+   "evento_de_otimizacao": "conversão primária de lead; idealmente lead qualificado importado (offline/conversões otimizadas para leads)",
+   "metricas": [
+    "parcela de impressões",
+    "CTR",
+    "taxa de conversão",
+    "custo por lead qualificado"
+   ]
+  }
+ ],
+ "funil_recomendado": [
+  {
+   "etapa": "Atração",
+   "objetivo": "Gerar atenção do ICP para a dor",
+   "canais": [
+    "Meta Reels/Stories",
+    "YouTube/PMax"
+   ],
+   "conteudos": [
+    "erros que derrubam a margem no delivery",
+    "quanto o iFood realmente custa",
+    "antes/depois de cliente"
+   ],
+   "metricas": [
+    "retenção de vídeo",
+    "CPM",
+    "custo por visualização de 50%"
+   ]
+  },
+  {
+   "etapa": "Captura",
+   "objetivo": "Converter interesse em contato",
+   "canais": [
+    "Google Pesquisa",
+    "Meta formulário/WhatsApp"
+   ],
+   "conteudos": [
+    "diagnóstico gratuito",
+    "auditoria de cardápio/anúncios",
+    "aula ao vivo"
+   ],
+   "metricas": [
+    "CPL",
+    "taxa de conversão"
+   ]
+  },
+  {
+   "etapa": "Qualificação",
+   "objetivo": "Separar ICP de curiosos",
+   "canais": [
+    "WhatsApp",
+    "ligação",
+    "CRM"
+   ],
+   "conteudos": [
+    "perguntas de qualificação",
+    "agenda de diagnóstico"
+   ],
+   "metricas": [
+    "% qualificado",
+    "tempo de primeiro contato"
+   ]
+  },
+  {
+   "etapa": "Reunião/diagnóstico",
+   "objetivo": "Mostrar valor e gerar proposta",
+   "canais": [
+    "videochamada",
+    "presencial"
+   ],
+   "conteudos": [
+    "diagnóstico com números do restaurante"
+   ],
+   "metricas": [
+    "show rate",
+    "custo por reunião realizada"
+   ]
+  },
+  {
+   "etapa": "Fechamento",
+   "objetivo": "Contrato",
+   "canais": [
+    "proposta",
+    "WhatsApp"
+   ],
+   "conteudos": [
+    "cases",
+    "garantias de processo (não de resultado)"
+   ],
+   "metricas": [
+    "taxa de fechamento",
+    "CAC",
+    "ciclo de venda"
+   ]
+  },
+  {
+   "etapa": "Retenção e indicação",
+   "objetivo": "Aumentar LTV",
+   "canais": [
+    "relatórios",
+    "grupo de clientes"
+   ],
+   "conteudos": [
+    "resultados mensais",
+    "programa de indicação"
+   ],
+   "metricas": [
+    "churn",
+    "LTV",
+    "indicações"
+   ]
+  }
+ ],
+ "estrutura_de_campanhas": {
+  "verba_pequena": {
+   "faixa_hipotese": "até cerca de R$ 1.500–3.000/mês (hipótese; ajustar ao CPL máximo)",
+   "distribuicao": {
+    "google_pesquisa_alta_intencao": "40–50%",
+    "meta_whatsapp_ou_formulario": "35–45%",
+    "remarketing": "10–15%"
+   },
+   "campanhas": [
+    "1 campanha Google Pesquisa com 2–3 grupos (consultoria delivery, aumentar vendas iFood, gestão de tráfego restaurante) em frase/exata",
+    "1 campanha Meta de captura com 2–3 criativos e público amplo/Advantage+ no Brasil ou praça",
+    "1 campanha de remarketing combinada"
+   ],
+   "regra": "Evitar fragmentar: poucos conjuntos com volume concentrado aprendem mais rápido."
+  },
+  "verba_maior": {
+   "faixa_hipotese": "acima de cerca de R$ 5.000/mês (hipótese)",
+   "distribuicao": {
+    "google_pesquisa": "30–35%",
+    "google_pmax_leads": "10–15% (após conversões qualificadas validadas)",
+    "meta_captura": "30–35%",
+    "meta_conteudo_topo": "5–10%",
+    "remarketing": "10%",
+    "testes": "5–10%"
+   },
+   "campanhas": [
+    "Pesquisa separada por intenção (serviço, problema, concorrente/plataforma)",
+    "PMax otimizada para lead qualificado com sinais de lista de clientes",
+    "Meta captura WhatsApp + formulário de maior intenção em testes A/B",
+    "Meta topo com vídeos de autoridade para alimentar remarketing",
+    "remarketing por janela (7, 30, 90 dias)"
+   ]
+  },
+  "servicos_locais": {
+   "observacao": "Clínicas e profissionais locais: Google Pesquisa com raio e recursos de chamada/local, Meta mensagens com raio. Atenção: o Google restringe formulários de lead para saúde e medicamentos; verificar política antes de usar."
+  },
+  "observacao": "Percentuais são pontos de partida. Realocar semanalmente pela métrica custo por lead qualificado/reunião, não por CPL."
+ },
+ "publicos": {
+  "meta_interesses_e_sinais": [
+   "proprietário de pequena empresa / administradores de páginas de empresa",
+   "interesses: iFood, Rappi, aiqfome, delivery, restaurante, food service, gastronomia, Abrasel, Sebrae, franquias de alimentação",
+   "comportamento: administradores de páginas de negócios de alimentação (quando disponível)"
+  ],
+  "meta_cargos_observacao": "Segmentação por cargo/empregador é limitada e pouco precisa na Meta; preferir públicos amplos/Advantage+ com criativo que filtre ('Para donos de restaurante que vendem no iFood...').",
+  "advantage_plus": "O público Advantage+ usa a IA da Meta para encontrar pessoas além das sugestões; controles como localização e idade mínima continuam restringindo. Usar sugestões de público como ponto de partida, e o criativo como principal filtro.",
+  "listas_e_semelhantes": [
+   "lista de clientes (com consentimento) para público semelhante 1–3% e sinais de público",
+   "leads qualificados/clientes como fonte melhor que todos os leads",
+   "excluir clientes atuais em campanhas de captura"
+  ],
+  "remarketing": [
+   "visitantes da landing page 30–90 dias",
+   "quem assistiu 50%+ dos vídeos",
+   "engajados com perfil do Instagram/Facebook",
+   "quem abriu formulário e não enviou",
+   "leads não fechados (lista do CRM)"
+  ],
+  "google_palavras_chave": {
+   "servico": [
+    "consultoria para delivery",
+    "consultoria para restaurante",
+    "consultoria ifood",
+    "gestão de tráfego para restaurante",
+    "agência de marketing para restaurante"
+   ],
+   "problema": [
+    "como aumentar vendas no ifood",
+    "como vender mais no delivery",
+    "restaurante com prejuízo no delivery",
+    "como reduzir taxa do ifood",
+    "cardápio que vende mais"
+   ],
+   "negativas_sugeridas": [
+    "vaga",
+    "emprego",
+    "curso grátis",
+    "pdf",
+    "download",
+    "entregador",
+    "cadastrar como entregador",
+    "login",
+    "reclamação",
+    "telefone ifood"
+   ]
+  },
+  "tipos_de_correspondencia": "Frase (\"...\") e exata ([...]) para começar com controle; ampla somente com Lances Inteligentes e conversões confiáveis, revisando termos de pesquisa semanalmente."
+ },
+ "framework_de_criativos": {
+  "formula": "Público explícito + dor específica + mecanismo/diferencial + prova + oferta de entrada + CTA único",
+  "ganchos": [
+   "Dono de restaurante: seu iFood vende muito e sobra pouco?",
+   "3 erros de cardápio que estão comendo sua margem no delivery",
+   "Você sabe quanto custa cada pedido depois das taxas?",
+   "Seu concorrente aparece antes de você no iFood. Por quê?",
+   "Faturamento subiu e o lucro não acompanhou?"
+  ],
+  "provas": [
+   "case com números e contexto (período, ponto de partida)",
+   "depoimento em vídeo do dono",
+   "print de painel autorizado",
+   "número de restaurantes atendidos (se verdadeiro)",
+   "bastidores do diagnóstico"
+  ],
+  "ofertas_de_entrada": [
+   {
+    "oferta": "Diagnóstico gratuito de 30–45 min",
+    "quando_usar": "oferta padrão; qualifica e mostra método"
+   },
+   {
+    "oferta": "Auditoria de cardápio/loja no iFood",
+    "quando_usar": "dor de vendas no marketplace"
+   },
+   {
+    "oferta": "Auditoria de anúncios/tráfego",
+    "quando_usar": "restaurante que já investe em mídia"
+   },
+   {
+    "oferta": "Aula/workshop ao vivo",
+    "quando_usar": "topo de funil, gerar lista e autoridade"
+   },
+   {
+    "oferta": "Planilha/calculadora de margem",
+    "quando_usar": "isca de lead de baixo atrito; exige nutrição"
+   }
+  ],
+  "ctas": [
+   "Quero meu diagnóstico",
+   "Enviar mensagem no WhatsApp",
+   "Agendar conversa",
+   "Garantir vaga na aula",
+   "Receber auditoria"
+  ],
+  "exemplos_de_textos": [
+   "Dono de restaurante: vende bem no iFood e não sobra dinheiro? Em um diagnóstico gratuito, mostramos onde a margem está escapando — taxa, cardápio ou promoção. Clique e fale com um consultor.",
+   "Seu delivery cresceu, mas o lucro não acompanhou? A Delivefood analisa cardápio, preços e campanhas da sua loja e entrega um plano prático. Vagas limitadas por semana.",
+   "3 erros que derrubam suas vendas no iFood: fotos fracas, cardápio confuso e promoção sem margem. Quer saber quais estão na sua loja? Peça a auditoria gratuita.",
+   "Antes de investir mais em anúncios, descubra quanto custa de verdade cada pedido. Diagnóstico Delivefood para restaurantes e dark kitchens. Chame no WhatsApp.",
+   "Restaurante parado no ranking do iFood? Mostramos, com os seus números, o que ajustar primeiro. Sem promessa milagrosa: método, dados e acompanhamento."
+  ],
+  "regras": [
+   "vídeo com rosto do especialista nos 3 primeiros segundos",
+   "legenda na tela (consumo sem som)",
+   "um criativo = uma ideia",
+   "testar ângulos (dor, prova, oferta), não só cores",
+   "renovar criativos quando frequência subir e custo por lead qualificado piorar",
+   "não usar promessas de faturamento garantido (risco de política e de reputação)"
+  ]
+ },
+ "landing_page_e_formulario": {
+  "landing_page": [
+   "título com público + resultado + prazo realista",
+   "subtítulo explicando a oferta de entrada",
+   "prova logo acima da dobra (case, logos, depoimento)",
+   "como funciona em 3 passos",
+   "para quem é / para quem não é",
+   "FAQ de objeções (preço, contrato, tempo, 'já tentei agência')",
+   "formulário curto ou botão de WhatsApp; um único CTA repetido",
+   "carregamento rápido no celular e política de privacidade visível"
+  ],
+  "formulario_meta": [
+   "preferir tipo 'maior intenção' (tela de revisão) quando a qualidade importa",
+   "2–3 perguntas qualificadoras de múltipla escolha",
+   "usar mensagem de conclusão com próximo passo (link WhatsApp/agenda)",
+   "integrar ao CRM para resposta imediata"
+  ],
+  "formulario_google": [
+   "recurso de formulário de lead disponível em Pesquisa e Performance Max (requisitos de elegibilidade)",
+   "exige link de política de privacidade",
+   "Google guarda leads por 60 dias; CSV cobre 30 dias — integrar via webhook/Zapier/API",
+   "usar perguntas qualificadoras e verificação para reduzir spam"
+  ],
+  "perguntas_qualificadoras_sugeridas": [
+   "Você é dono ou sócio do restaurante?",
+   "Faturamento mensal aproximado no delivery (faixas)",
+   "Onde vende hoje? (iFood, próprio, ambos)",
+   "Qual o maior desafio agora?",
+   "Quando quer começar?"
+  ]
+ },
+ "qualificacao_e_comercial": {
+  "criterios_icp": [
+   "decisor (dono/sócio)",
+   "faturamento acima do mínimo definido pela consultoria",
+   "opera delivery há tempo mínimo",
+   "dor alinhada aos serviços",
+   "disponibilidade para investir no prazo próximo"
+  ],
+  "classificacao": {
+   "A": "ICP + urgência + orçamento: reunião em até 24h",
+   "B": "ICP sem urgência: nutrição + convite para aula/conteúdo",
+   "C": "fora do ICP: resposta educada e material gratuito"
+  },
+  "speed_to_lead": "Meta interna: primeiro contato em minutos durante horário comercial (hipótese de alto impacto; validar comparando taxa de reunião por faixa de tempo de resposta no CRM). Fora do horário: mensagem automática com agenda.",
+  "etapas_crm": [
+   "Novo lead",
+   "Contato feito",
+   "Qualificado (MQL/SQL)",
+   "Reunião agendada",
+   "Reunião realizada",
+   "Proposta enviada",
+   "Ganho",
+   "Perdido (com motivo)"
+  ],
+  "cadencia_whatsapp": [
+   {
+    "momento": "0–5 min",
+    "acao": "apresentação + 1 pergunta de qualificação"
+   },
+   {
+    "momento": "+2 h",
+    "acao": "lembrete curto com benefício do diagnóstico"
+   },
+   {
+    "momento": "D+1",
+    "acao": "ligação ou áudio curto"
+   },
+   {
+    "momento": "D+3",
+    "acao": "case/prova relevante"
+   },
+   {
+    "momento": "D+7",
+    "acao": "última mensagem com porta aberta; mover para nutrição"
+   }
+  ],
+  "regras": [
+   "registrar origem (UTM/campanha) em todo lead",
+   "definir SLA marketing↔vendas por escrito",
+   "motivo de perda obrigatório para alimentar otimização",
+   "confirmar reunião no dia (reduz no-show)",
+   "não enviar mensagens em massa sem opt-in (políticas do WhatsApp e LGPD)"
+  ]
+ },
+ "mensuracao": {
+  "metricas": {
+   "CPL": "investimento / leads",
+   "custo_por_lead_qualificado": "investimento / leads qualificados",
+   "custo_por_reuniao": "investimento / reuniões realizadas",
+   "CAC": "(mídia + custo comercial e de marketing atribuível) / novos clientes",
+   "LTV": "mensalidade média × margem bruta × meses médios de permanência (+ setup)",
+   "payback": "CAC / (mensalidade × margem) em meses"
+  },
+  "eventos_recomendados": [
+   "Meta: Lead, Contact, Schedule, eventos personalizados LeadQualificado e Contrato via API de Conversões",
+   "Google: envio de formulário, clique no WhatsApp (secundário), lead qualificado e contrato importados como conversão primária quando houver volume"
+  ],
+  "api_de_conversoes_meta": "Conecta dados do servidor/CRM à Meta; usar junto com o Pixel com deduplicação por event_id. Para formulários instantâneos, a API de Conversões para CRM permite enviar etapas do funil e otimizar para leads de conversão (verificar requisitos atuais de volume).",
+  "conversoes_offline_google": "Importar conversões por GCLID (até 90 dias após o clique) ou usar conversões otimizadas para leads com dados hash (e-mail/telefone, SHA-256; janela de 63 dias). O Google recomenda começar pelas conversões otimizadas para leads. Dados importados aparecem após cerca de 3 horas.",
+  "padrao_utm": "utm_source=meta|google, utm_medium=cpc|paid_social, utm_campaign={nome_campanha}, utm_content={criativo}, utm_term={palavra}",
+  "regras": [
+   "capturar e salvar GCLID/fbclid em campo oculto do formulário",
+   "sempre comparar dados da plataforma com CRM",
+   "uma conversão primária por estágio para não confundir lances",
+   "janela de análise compatível com o ciclo de venda"
+  ]
+ },
+ "formulas_de_decisao": [
+  {
+   "nome": "Valor do contrato (margem)",
+   "formula": "valor_contrato = (setup + mensalidade × meses_medios) × margem_bruta",
+   "observacao": "Usar meses médios reais; sem histórico, usar hipótese conservadora."
+  },
+  {
+   "nome": "CAC máximo",
+   "formula": "CAC_max = valor_contrato × percentual_aceitavel_para_aquisicao",
+   "observacao": "Ex.: 30–40% como ponto de partida a validar."
+  },
+  {
+   "nome": "CPL máximo",
+   "formula": "CPL_max = CAC_max × taxa_lead_para_contrato",
+   "observacao": "Equivale a ticket × margem × taxa de fechamento ajustada pelo percentual de aquisição."
+  },
+  {
+   "nome": "Custo máximo por reunião",
+   "formula": "custo_reuniao_max = CAC_max × taxa_reuniao_para_contrato",
+   "observacao": "Métrica de decisão mais estável que CPL em B2B."
+  },
+  {
+   "nome": "Payback",
+   "formula": "payback_meses = CAC / (mensalidade × margem_bruta)",
+   "observacao": "Para caixa apertado, priorizar payback curto ou cobrar setup."
+  },
+  {
+   "nome": "Leads necessários",
+   "formula": "leads = meta_contratos / taxa_lead_para_contrato",
+   "observacao": "Conferir se o comercial tem capacidade para atender esse volume."
+  },
+  {
+   "nome": "Verba mensal necessária",
+   "formula": "verba = leads_necessarios × CPL_observado",
+   "observacao": "Se verba > CAC_max × contratos, rever oferta, qualificação ou canal."
+  },
+  {
+   "nome": "Exemplo",
+   "formula": "mensalidade 1.500 × margem 0,6 × 8 meses = 7.200; CAC_max (35%) = 2.520; taxa lead→contrato 5% → CPL_max = 126",
+   "observacao": "Números ilustrativos, não benchmark."
+  }
+ ],
+ "arvore_de_diagnostico": [
+  {
+   "sintoma": "Muitos leads, poucos qualificados",
+   "verificar": [
+    "tipo de formulário (volume x intenção)",
+    "perguntas qualificadoras",
+    "promessa do anúncio genérica ou 'grátis' demais",
+    "público amplo sem filtro no criativo",
+    "evento de otimização"
+   ],
+   "acoes": [
+    "usar formulário de maior intenção",
+    "chamar o ICP no gancho",
+    "adicionar faixa de faturamento",
+    "otimizar para lead qualificado via CRM/API de Conversões"
+   ]
+  },
+  {
+   "sintoma": "CPL alto",
+   "verificar": [
+    "CTR e CPM",
+    "taxa de conversão da página/formulário",
+    "clareza da oferta",
+    "segmentação restrita demais",
+    "termos de pesquisa irrelevantes"
+   ],
+   "acoes": [
+    "testar novos ganchos e formato vídeo",
+    "simplificar formulário",
+    "ampliar público",
+    "negativar termos",
+    "rever oferta de entrada"
+   ]
+  },
+  {
+   "sintoma": "Leads não respondem",
+   "verificar": [
+    "tempo de primeiro contato",
+    "telefone válido",
+    "mensagem inicial",
+    "horário de contato"
+   ],
+   "acoes": [
+    "resposta automática imediata",
+    "cadência multicanal",
+    "validação de telefone/OTP",
+    "formulário de maior intenção"
+   ]
+  },
+  {
+   "sintoma": "Reuniões com no-show alto",
+   "verificar": [
+    "intervalo entre agendamento e reunião",
+    "confirmação",
+    "valor percebido do diagnóstico"
+   ],
+   "acoes": [
+    "agendar em até 48h",
+    "lembretes D-1 e 1h antes",
+    "enviar pré-diagnóstico para aumentar compromisso"
+   ]
+  },
+  {
+   "sintoma": "Reuniões não fecham",
+   "verificar": [
+    "fit do ICP",
+    "proposta e preço",
+    "provas",
+    "objeções registradas"
+   ],
+   "acoes": [
+    "ajustar critérios de qualificação",
+    "usar cases do mesmo perfil",
+    "oferecer plano de entrada",
+    "revisar pitch"
+   ]
+  },
+  {
+   "sintoma": "Google gasta e não converte",
+   "verificar": [
+    "termos de pesquisa",
+    "correspondência ampla sem dados",
+    "conversão configurada corretamente",
+    "landing page"
+   ],
+   "acoes": [
+    "frase/exata",
+    "negativas",
+    "conferir tag e conversão primária",
+    "página específica por grupo"
+   ]
+  },
+  {
+   "sintoma": "Resultados caíram após semanas",
+   "verificar": [
+    "frequência",
+    "fadiga de criativos",
+    "saturação do público",
+    "sazonalidade"
+   ],
+   "acoes": [
+    "renovar criativos",
+    "novos ângulos",
+    "ampliar praça",
+    "rever oferta"
+   ]
+  }
+ ],
+ "regras_de_escala": [
+  "Escalar apenas com custo por reunião/contrato dentro do máximo por pelo menos 1–2 ciclos de análise.",
+  "Aumentar verba de forma gradual (ex.: 15–20% a cada poucos dias, hipótese) e observar custo por lead qualificado.",
+  "Confirmar capacidade do comercial antes de escalar: mais leads sem atendimento piora a taxa de fechamento.",
+  "Duplicar o que funciona para nova praça/público antes de forçar um conjunto saturado.",
+  "Manter 10–20% para testes de criativo e oferta.",
+  "Passar para otimização por lead qualificado/contrato quando houver volume estável."
+ ],
+ "rotina_de_otimizacao": {
+  "diaria": [
+   "checar gasto e entrega anormais",
+   "verificar se leads chegam ao CRM e foram contatados",
+   "pausar anúncios com reprovação ou gasto sem lead muito acima do CPL máximo"
+  ],
+  "semanal": [
+   "custo por lead qualificado e por reunião por campanha/criativo",
+   "termos de pesquisa e negativas",
+   "frequência e fadiga",
+   "feedback do comercial sobre qualidade",
+   "subir conversões offline/CRM",
+   "1–2 novos criativos"
+  ],
+  "mensal": [
+   "CAC, LTV e payback por canal",
+   "realocar verba entre canais",
+   "revisar oferta de entrada e landing page",
+   "atualizar listas de clientes e exclusões",
+   "relatório para diretoria/cliente"
+  ]
+ },
+ "regras_para_respostas_da_ia": [
+  "Responder em português claro, com passos.",
+  "Pedir ticket, margem, taxa de fechamento e capacidade comercial quando a recomendação depender deles.",
+  "Nunca prometer número de leads, contratos ou faturamento.",
+  "Diferenciar lead, lead qualificado, reunião e contrato.",
+  "Marcar números como hipótese e explicar como validar.",
+  "Citar a necessidade de conferir regras atuais das plataformas.",
+  "Respeitar LGPD e políticas de anúncios (sem promessas enganosas, sem dados sensíveis desnecessários).",
+  "Recomendar sempre o próximo teste concreto."
+ ],
+ "perguntas_e_respostas": [
+  {
+   "pergunta": "WhatsApp ou formulário instantâneo para vender consultoria?",
+   "resposta": "Se o comercial responde em minutos e o dono de restaurante prefere conversar, WhatsApp tende a qualificar melhor. Formulário gera volume com menos atrito, mas exige perguntas qualificadoras e contato rápido. Teste ambos e compare custo por reunião, não CPL."
+  },
+  {
+   "pergunta": "Quanto investir para começar?",
+   "resposta": "Calcule o CPL máximo e o número de leads necessários para algumas reuniões por semana. A verba inicial deve gerar dados suficientes para decidir em 2–4 semanas sem ultrapassar a perda aceitável."
+  },
+  {
+   "pergunta": "Vale usar Performance Max para leads?",
+   "resposta": "Depois que Pesquisa e o rastreamento de lead qualificado estiverem funcionando. Sem sinal de qualidade, PMax tende a buscar leads baratos e de baixa qualidade."
+  },
+  {
+   "pergunta": "Como segmentar donos de restaurante na Meta?",
+   "resposta": "Use público amplo ou Advantage+ com interesses de food service como sugestão, e deixe o criativo filtrar ('Para donos de restaurante...'). Alimente com lista de clientes e otimize para leads qualificados."
+  },
+  {
+   "pergunta": "Por que o CPL está ótimo mas não fecha contrato?",
+   "resposta": "Provavelmente a campanha otimiza para quantidade. Aumente atrito qualificador, ajuste a promessa e envie o status do CRM de volta às plataformas."
+  },
+  {
+   "pergunta": "Posso prometer aumento de faturamento no anúncio?",
+   "resposta": "Não. Use cases reais com contexto e descreva o método. Promessas garantidas violam boas práticas, podem violar políticas e geram desconfiança."
+  }
+ ],
+ "oferta_gestao_de_trafego": {
+  "posicionamento": "Combo Consultoria + Tráfego: a Delivefood não só roda anúncios, ajusta cardápio, preço, margem e operação para que a mídia gere pedidos lucrativos. Diferencial contra gestores que só olham CPC/ROAS.",
+  "modelos_de_preco": [
+   {
+    "modelo": "Fee mensal fixo",
+    "descricao": "valor fixo pela gestão, independente da verba; simples e previsível",
+    "quando_usar": "padrão para restaurantes de pequeno e médio porte"
+   },
+   {
+    "modelo": "Fee + bônus por performance",
+    "descricao": "fee fixo menor + bônus atrelado a metas mensuráveis e auditáveis (ex.: pedidos no canal próprio)",
+    "quando_usar": "cliente com rastreamento confiável e histórico"
+   },
+   {
+    "modelo": "Fee escalonado por faixa de verba",
+    "descricao": "faixas de investimento definem o fee",
+    "quando_usar": "clientes com verba crescente"
+   },
+   {
+    "modelo": "Pacote combo",
+    "descricao": "consultoria (diagnóstico + plano) + gestão de tráfego com desconto no conjunto",
+    "quando_usar": "oferta principal da Delivefood"
+   }
+  ],
+  "regras_de_verba": [
+   "a verba de mídia é paga pelo cliente, na conta de anúncios do cliente, com cartão/boleto do cliente",
+   "a Delivefood recebe acesso de parceiro: Meta via portfólio empresarial (Business Manager) do cliente concedendo acesso de parceiro; Google via vínculo da conta do cliente à conta de administrador (MCC)",
+   "o cliente mantém a propriedade da conta, do Pixel, dos públicos e dos dados"
+  ],
+  "checklist_onboarding": [
+   "contrato assinado e briefing (ticket, margem, praça, canais, capacidade)",
+   "acesso de parceiro ao portfólio Meta, página, Instagram, conta de anúncios e Pixel",
+   "vínculo da conta Google Ads ao MCC e acesso ao Google Analytics/Tag Manager/Perfil da Empresa",
+   "forma de pagamento do cliente cadastrada nas contas",
+   "auditoria de rastreamento (Pixel, API de Conversões, tag do Google, UTMs)",
+   "coleta de fotos, vídeos e provas",
+   "definição de metas, CPA/CPL máximo e relatórios",
+   "alinhamento de quem atende WhatsApp e em quanto tempo"
+  ],
+  "relatorios": {
+   "semanal": "resumo curto no WhatsApp: verba, resultados, principais ações",
+   "mensal": "relatório com investimento, pedidos/leads, custo por resultado, aprendizados e próximos testes + reunião de 30–45 min",
+   "trimestral": "revisão estratégica de oferta, canais e metas"
+  },
+  "cuidados_contratuais": [
+   "não garantir resultados de vendas ou faturamento; comprometer-se com entregáveis e processo",
+   "deixar claro que verba de mídia não está inclusa no fee e é de responsabilidade do cliente",
+   "definir prazo mínimo, aviso prévio e o que acontece com acessos ao encerrar (remoção do acesso de parceiro)",
+   "propriedade de contas, criativos e dados do cliente",
+   "aprovação de criativos e responsabilidade por informações/promoções anunciadas",
+   "conformidade com LGPD e políticas das plataformas"
+  ],
+  "exemplos_de_anuncios": [
+   "Dono de restaurante: anúncio sem estratégia vira gasto. A Delivefood une consultoria de delivery e gestão de tráfego para trazer pedidos com margem. Peça seu diagnóstico.",
+   "Seu gestor de tráfego olha seu cardápio e sua margem? Nós olhamos. Consultoria + tráfego pago para restaurantes, com relatório mensal claro. Fale no WhatsApp.",
+   "Quer vender mais no seu canal próprio e depender menos do iFood? Gestão de Meta e Google Ads feita por quem entende de delivery. Agende uma conversa."
+  ]
+ },
+ "fontes": [
+  {
+   "titulo": "Google Ads — Sobre anúncios responsivos de pesquisa",
+   "url": "https://support.google.com/google-ads/answer/7684791",
+   "uso": "Limites de títulos (15×30) e descrições (4×90), fixação, força do anúncio."
+  },
+  {
+   "titulo": "Google Ads — Sobre recursos de formulário de lead",
+   "url": "https://support.google.com/google-ads/answer/9423234",
+   "uso": "Campanhas compatíveis, retenção de 60 dias, exportação via webhook/API/Zapier."
+  },
+  {
+   "titulo": "Google Ads — Requisitos de formulário de lead (políticas)",
+   "url": "https://support.google.com/adspolicy/answer/9472930",
+   "uso": "Política de privacidade, categorias restritas (inclui saúde)."
+  },
+  {
+   "titulo": "Google Ads — Opções de correspondência de palavras-chave",
+   "url": "https://support.google.com/google-ads/answer/7478529",
+   "uso": "Ampla, frase, exata e negativas."
+  },
+  {
+   "titulo": "Google Ads — Práticas recomendadas de Performance Max para geração de leads",
+   "url": "https://support.google.com/google-ads/answer/13775965",
+   "uso": "Metas de lead qualificado, lances, tempo de aprendizado, exclusões de marca."
+  },
+  {
+   "titulo": "Google Ads — Sobre conversões otimizadas",
+   "url": "https://support.google.com/google-ads/answer/14101585",
+   "uso": "Dados hash SHA-256 e conversões otimizadas para leads."
+  },
+  {
+   "titulo": "Google Ads — Diretrizes para importar conversões off-line",
+   "url": "https://support.google.com/google-ads/answer/15081888",
+   "uso": "Janela de 90 dias (GCLID) e 63 dias (leads otimizados)."
+  },
+  {
+   "titulo": "Google Ads — Vincular contas à conta de administrador",
+   "url": "https://support.google.com/google-ads/answer/7459601",
+   "uso": "Acesso de agência via MCC."
+  },
+  {
+   "titulo": "Meta — Sobre anúncios de cadastro com formulário instantâneo",
+   "url": "https://www.facebook.com/business/help/761812391313386",
+   "uso": "Formulários instantâneos e tipos de formulário."
+  },
+  {
+   "titulo": "Meta — Anúncios de cadastro com mensagens",
+   "url": "https://www.facebook.com/business/ads/ad-objectives/lead-generation/lead-ads-with-messaging",
+   "uso": "Leads via WhatsApp/Messenger."
+  },
+  {
+   "titulo": "Meta — Anúncios de clique para mensagem",
+   "url": "https://www.facebook.com/business/ads/click-to-message-ads",
+   "uso": "Campanhas de mensagens para WhatsApp."
+  },
+  {
+   "titulo": "Meta — Sobre o público Advantage+",
+   "url": "https://www.facebook.com/business/help/273363992030035",
+   "uso": "Sugestões e controles de público."
+  },
+  {
+   "titulo": "Meta — Sobre a API de Conversões",
+   "url": "https://www.facebook.com/business/help/2041148702652965",
+   "uso": "Envio de eventos do servidor e deduplicação."
+  },
+  {
+   "titulo": "Meta — Configurar o CRM para leads qualificados",
+   "url": "https://www.facebook.com/business/help/279369167153556",
+   "uso": "Otimização para leads de conversão com dados do CRM."
+  },
+  {
+   "titulo": "Meta — Dar acesso de parceiro a ativos do portfólio empresarial",
+   "url": "https://www.facebook.com/business/help/1717412048538897",
+   "uso": "Acesso de agência sem transferir propriedade."
+  },
+  {
+   "titulo": "RD Station — O que são MQL e SQL",
+   "url": "https://www.rdstation.com/blog/vendas/mql/",
+   "uso": "Qualificação, lead scoring e SLA marketing-vendas."
+  },
+  {
+   "titulo": "RD Station — Tráfego pago: o que é e principais tipos",
+   "url": "https://www.rdstation.com/blog/marketing/trafego-pago/",
+   "uso": "Conceitos de mídia paga no Brasil."
+  },
+  {
+   "titulo": "RD Station — Gestor de tráfego",
+   "url": "https://www.rdstation.com/blog/agencias/gestor-de-trafego/",
+   "uso": "Papel e entregáveis do serviço de gestão de tráfego."
+  },
+  {
+   "titulo": "Rock Content — Como criar uma landing page",
+   "url": "https://rockcontent.com/br/blog/como-criar-uma-landing-page/",
+   "uso": "Boas práticas de landing page."
+  },
+  {
+   "titulo": "HubSpot Brasil — O que é SLA",
+   "url": "https://br.hubspot.com/blog/sales/o-que-e-sla",
+   "uso": "Acordo de nível de serviço entre marketing e vendas."
+  }
+ ]
+}

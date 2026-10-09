@@ -4,7 +4,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { store } from "./store.js";
 import { seedIfEmpty } from "./providers/mock.js";
-import { state, propose, confirm, reject, invalidate } from "./actions.js";
+import { state, propose, confirm, reject, invalidate, descartarRascunho } from "./actions.js";
 import { ask, runTool, TOOLS, PLAYBOOK } from "./copilot.js";
 import { ROOT } from "./paths.js";
 import { loadSettings, publicSettings, saveSettings, recordTest, onChange } from "./settings.js";
@@ -12,6 +12,9 @@ import { testar } from "./testes.js";
 import { resetGoogleToken } from "./providers/google.js";
 import { diagnosticar } from "./diagnostico.js";
 import { campaigns } from "./actions.js";
+import { salvarImagem, caminhoImagem } from "./imagens.js";
+import { paginasMeta } from "./providers/meta.js";
+import { dicasCriacao } from "./especialista.js";
 import { statusClaudeDesktop, conectarClaudeDesktop } from "./claude-desktop.js";
 
 const PORT = Number(process.env.PORT || 3000);
@@ -28,6 +31,7 @@ if (!pass() && process.env.HOST !== "127.0.0.1") console.warn("Aviso: APP_PASSWO
 seedIfEmpty();
 const app = express();
 app.set("trust proxy", 1);
+app.use("/api/imagens", express.json({ limit: "12mb" }));
 app.use(express.json({ limit: "200kb" }));
 
 // ---- login simples por senha, com cookie assinado ----
@@ -121,13 +125,42 @@ app.post("/api/clients", wrap(async (req, res) => {
       margem: Number(b.margem) || 0,
       metaAdAccountId: String(b.metaAdAccountId || "").trim(),
       googleCustomerId: String(b.googleCustomerId || "").trim(),
+      foco: b.foco === "servico" ? "servico" : "comida",
+      endereco: String(b.endereco || "").trim(),
     });
+    if (!c.endereco) { delete c.lat; delete c.lng; }
     return { ...c, nova };
   });
+  // Endereço vira coordenada (OpenStreetMap) para anunciar no raio de entrega.
+  const atual = store.get().clients.find((x) => x.id === out.id);
+  if (atual.endereco && atual.endereco !== atual.geoDe) {
+    const geo = await geocodificar(atual.endereco).catch(() => null);
+    store.update(() => { if (geo) { atual.lat = geo.lat; atual.lng = geo.lng; atual.geoDe = atual.endereco; } else { delete atual.lat; delete atual.lng; delete atual.geoDe; } });
+    out.endereco_ok = Boolean(geo);
+  }
   store.audit({ quem: user(), origem: "tela", acao: "loja", resultado: (out.nova ? "Loja cadastrada: " : "Loja atualizada: ") + out.nome });
   invalidate();
   res.json(out);
 }));
+
+async function geocodificar(endereco) {
+  const u = new URL("https://nominatim.openstreetmap.org/search");
+  u.search = new URLSearchParams({ q: endereco, format: "json", limit: "1", countrycodes: "br" });
+  const r = await fetch(u, { headers: { "User-Agent": "TrafgFood/1.0 (Delivefood Consultoria)", "Accept-Language": "pt-BR" } });
+  const [hit] = await r.json();
+  return hit ? { lat: Number(hit.lat), lng: Number(hit.lon) } : null;
+}
+
+app.post("/api/rascunhos/:id/descartar", wrap(async (req, res) => { descartarRascunho(req.params.id); res.json({ ok: true }); }));
+
+// Fotos dos anúncios e páginas da Meta, usadas na criação de campanha.
+app.post("/api/imagens", wrap(async (req, res) => res.json(salvarImagem(req.body?.dados, req.body?.nome))));
+app.get("/api/imagens/:id", wrap(async (req, res) => res.sendFile(caminhoImagem(req.params.id))));
+app.get("/api/meta/paginas", wrap(async (_req, res) => {
+  if (!process.env.META_ACCESS_TOKEN) throw new Error("Coloque o token da Meta em Configurações.");
+  res.json(await paginasMeta());
+}));
+app.get("/api/especialista", wrap(async (req, res) => res.json(dicasCriacao(req.query.foco === "servico" ? "servico" : "comida"))));
 
 // Excluir tira a loja só do TrafgFood. As contas e campanhas nas plataformas continuam como estão.
 app.delete("/api/clients/:id", wrap(async (req, res) => {
@@ -199,7 +232,7 @@ app.get("/api/ponte/manual", (_req, res) => res.json({ manual: PLAYBOOK, ferrame
 app.post("/api/ponte/ferramenta", wrap(async (req, res) => {
   const { nome, args } = req.body || {};
   if (!TOOLS.some((t) => t.name === nome)) throw new Error("Ferramenta desconhecida: " + nome);
-  const lojas = store.get().clients.map((c) => ({ id: c.id, nome: c.nome, cidade: c.cidade, ticket_medio: c.ticket, margem_pct: c.margem || null }));
+  const lojas = store.get().clients.map((c) => ({ id: c.id, nome: c.nome, cidade: c.cidade, ticket_medio: c.ticket, margem_pct: c.margem || null, foco: c.foco || "comida", tem_meta: Boolean(c.metaAdAccountId), tem_google: Boolean(c.googleCustomerId), tem_endereco: c.lat != null }));
   const out = await runTool(nome, args || {}, [], "Claude (app)");
   res.json(nome === "buscar_campanhas" ? { lojas, campanhas: out } : out);
 }));

@@ -65,7 +65,7 @@ async function listarFerramentas() {
   return [
     { name: "manual_do_gestor", description: "Base de conhecimento de tráfego pago da Delivefood (fórmulas, diagnóstico, regras de escala). Chame uma vez antes de analisar.", inputSchema: { type: "object", properties: {} }, annotations: { readOnlyHint: true } },
     ...m.ferramentas.map((t) => ({ name: t.name, description: t.description + (t.name.startsWith("propor_") ? " Não aplica nada: a pessoa confirma no TrafgFood." : ""), inputSchema: t.input_schema,
-      annotations: { readOnlyHint: !t.name.startsWith("propor_"), destructiveHint: false } })),
+      annotations: { readOnlyHint: ["buscar_campanhas", "diagnostico_automatico"].includes(t.name), destructiveHint: false } })),
   ];
 }
 
@@ -86,7 +86,7 @@ async function tratar(msg) {
   try {
     let result;
     if (method === "initialize") {
-      result = { protocolVersion: params?.protocolVersion || "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "trafgfood", version: "1.1.0" }, instructions: INSTRUCOES };
+      result = { protocolVersion: params?.protocolVersion || "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "trafgfood", version: "1.2.0" }, instructions: INSTRUCOES };
     } else if (method === "ping") result = {};
     else if (method === "tools/list") result = { tools: await listarFerramentas() };
     else if (method === "tools/call") {

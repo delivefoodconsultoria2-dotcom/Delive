@@ -123,6 +123,11 @@ export function googleProvider() {
         operations: [{ update: { resourceName: `customers/${cid}/campaigns/${campaignId}`, status: status === "ativa" ? "ENABLED" : "PAUSED" }, updateMask: "status" }],
       });
     },
+    // Finalizar = remover: a campanha para de gastar e não pode ser reativada.
+    async finalize(id) {
+      const { cid, campaignId } = split(id);
+      await call(cid, "campaigns:mutate", { operations: [{ remove: `customers/${cid}/campaigns/${campaignId}` }] });
+    },
     async setDailyBudget(id, reais) {
       const { cid, campaignId } = split(id);
       const [row] = await search(cid, `SELECT campaign_budget.resource_name FROM campaign WHERE campaign.id = ${digits(campaignId)}`);
@@ -131,8 +136,36 @@ export function googleProvider() {
         operations: [{ update: { resourceName: row.campaignBudget.resourceName, amountMicros: String(Math.round(reais * 1e6)) }, updateMask: "amount_micros" }],
       });
     },
-    async createCampaign() {
-      throw new Error("Criar campanha no Google Ads pelo TrafgFood ainda não está pronto. Crie no Google Ads e ela aparece aqui para gerenciar.");
+    // Campanha de Pesquisa completa (orçamento, raio, palavras-chave e anúncio responsivo), PAUSADA.
+    async createCampaign(d) {
+      const client = store.get().clients.find((c) => c.id === d.clientId);
+      if (!client?.googleCustomerId) throw new Error("Essa loja ainda não tem ID de cliente Google Ads cadastrado.");
+      const brasil = d.area === "brasil";
+      if (!brasil && client.lat == null) throw new Error("Cadastre o endereço da loja (Lojas e contas) para anunciar no raio de entrega.");
+      const cid = digits(client.googleCustomerId), rn = (tipo, n) => `customers/${cid}/${tipo}/${n}`;
+      const ops = [
+        { campaignBudgetOperation: { create: { resourceName: rn("campaignBudgets", -1), name: `${d.nome} ${Date.now()}`, amountMicros: String(Math.round(d.orcamento * 1e6)), deliveryMethod: "STANDARD", explicitlyShared: false } } },
+        { campaignOperation: { create: {
+          resourceName: rn("campaigns", -2), name: d.nome, status: "PAUSED", advertisingChannelType: "SEARCH",
+          campaignBudget: rn("campaignBudgets", -1), targetSpend: {},
+          networkSettings: { targetGoogleSearch: true, targetSearchNetwork: false, targetContentNetwork: false, targetPartnerSearchNetwork: false },
+          geoTargetTypeSetting: { positiveGeoTargetType: "PRESENCE" },
+          containsEuPoliticalAdvertising: "DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING",
+        } } },
+        { campaignCriterionOperation: { create: { campaign: rn("campaigns", -2), ...(brasil
+          ? { location: { geoTargetConstant: "geoTargetConstants/2076" } }
+          : { proximity: {
+            geoPoint: { latitudeInMicroDegrees: Math.round(client.lat * 1e6), longitudeInMicroDegrees: Math.round(client.lng * 1e6) },
+            radius: Number(d.raio) || 5, radiusUnits: "KILOMETERS" } }) } } },
+        { campaignCriterionOperation: { create: { campaign: rn("campaigns", -2), language: { languageConstant: "languageConstants/1014" } } } },
+        { adGroupOperation: { create: { resourceName: rn("adGroups", -3), campaign: rn("campaigns", -2), name: d.nome, status: "ENABLED", type: "SEARCH_STANDARD" } } },
+        ...d.palavras.map((text) => ({ adGroupCriterionOperation: { create: { adGroup: rn("adGroups", -3), status: "ENABLED", keyword: { text, matchType: "PHRASE" } } } })),
+        { adGroupAdOperation: { create: { adGroup: rn("adGroups", -3), status: "ENABLED", ad: { finalUrls: [d.link], responsiveSearchAd: {
+          headlines: d.titulos.map((text) => ({ text })), descriptions: d.descricoes.map((text) => ({ text })) } } } } },
+      ];
+      const r = await call(cid, "googleAds:mutate", { mutateOperations: ops });
+      const camp = (r.mutateOperationResponses || []).map((x) => x.campaignResult?.resourceName).find(Boolean) || "";
+      return { id: `google:${cid}-${camp.split("/").pop()}`, observacao: "Criada PAUSADA com palavras-chave e anúncio. Revise e toque em Reativar para começar a rodar." };
     },
   };
 }
