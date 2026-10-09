@@ -18,7 +18,7 @@ export const GRUPOS = [
   {
     id: "google",
     titulo: "Google Ads",
-    ajuda: "Client ID e Client Secret em console.cloud.google.com > Credenciais. Refresh token no OAuth Playground (escopo adwords).",
+    ajuda: "Client ID e Client Secret em console.cloud.google.com > Credenciais. O refresh token sai do botão Conectar com Google, logo abaixo.",
     campos: [
       { key: "GOOGLE_ADS_CLIENT_ID", label: "Client ID", placeholder: "...apps.googleusercontent.com" },
       { key: "GOOGLE_ADS_CLIENT_SECRET", label: "Client Secret", secret: true, placeholder: "GOCSPX-..." },

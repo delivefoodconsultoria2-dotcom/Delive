@@ -23,6 +23,7 @@ if (!pass() && process.env.HOST !== "127.0.0.1") console.warn("Aviso: APP_PASSWO
 
 seedIfEmpty();
 const app = express();
+app.set("trust proxy", 1);
 app.use(express.json({ limit: "200kb" }));
 
 // ---- login simples por senha, com cookie assinado ----
@@ -144,6 +145,41 @@ app.post("/api/config/test/:grupo", wrap(async (req, res) => {
   invalidate();
   res.json(r);
 }));
+// "Conectar com Google": gera o refresh token sozinho, sem OAuth Playground.
+// O endereço de retorno (…/api/google/callback) precisa estar nos "URIs de redirecionamento autorizados" do Client ID.
+const oauthStates = new Map();
+const retornoGoogle = (req) => `${req.protocol}://${req.get("host")}/api/google/callback`;
+app.get("/api/google/conectar", (req, res) => {
+  if (!process.env.GOOGLE_ADS_CLIENT_ID || !process.env.GOOGLE_ADS_CLIENT_SECRET) return res.redirect("/?google=" + encodeURIComponent("Salve o Client ID e o Client Secret antes de conectar.") + "#config");
+  const st = crypto.randomBytes(16).toString("hex");
+  oauthStates.set(st, Date.now());
+  const u = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  u.search = new URLSearchParams({
+    client_id: process.env.GOOGLE_ADS_CLIENT_ID, redirect_uri: retornoGoogle(req), response_type: "code",
+    scope: "https://www.googleapis.com/auth/adwords", access_type: "offline", prompt: "consent", state: st,
+  });
+  res.redirect(u.toString());
+});
+app.get("/api/google/callback", wrap(async (req, res) => {
+  const volta = (msg) => res.redirect("/?google=" + encodeURIComponent(msg) + "#config");
+  const { code, state: st, error } = req.query;
+  if (error) return volta(error === "access_denied" ? "Você cancelou o acesso no Google." : "O Google respondeu: " + error);
+  if (!st || !oauthStates.has(st) || Date.now() - oauthStates.get(st) > 15 * 60e3) return volta("O pedido de conexão expirou. Clique em Conectar com Google de novo.");
+  oauthStates.delete(st);
+  const r = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    body: new URLSearchParams({ code: String(code), client_id: process.env.GOOGLE_ADS_CLIENT_ID, client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET, redirect_uri: retornoGoogle(req), grant_type: "authorization_code" }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) return volta("O Google não aceitou: " + (j.error_description || j.error || r.statusText));
+  if (!j.refresh_token) return volta("O Google não mandou o refresh token. Remova o acesso do TrafgFood em myaccount.google.com/permissions e conecte de novo.");
+  saveSettings({ GOOGLE_ADS_REFRESH_TOKEN: j.refresh_token });
+  store.audit({ quem: user(), origem: "tela", acao: "config", resultado: "Google Ads conectado pelo botão Conectar com Google" });
+  try { recordTest("google", true, await testar("google")); } catch (e) { recordTest("google", false, e.message); }
+  invalidate();
+  volta("ok");
+}));
+
 // Só no TrafgFood instalado no computador: desliga o programa.
 app.post("/api/desligar", (_req, res) => {
   if (!process.env.TF_ROOT) return res.status(400).json({ erro: "Só funciona no TrafgFood instalado no computador." });

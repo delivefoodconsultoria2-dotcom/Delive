@@ -332,6 +332,10 @@ function viewConfig() {
     <p class="sub" style="margin:0">${esc(g.ajuda)}</p>
     ${g.teste ? `<p class="tmsg ${g.teste.ok ? "ok" : "bad"}">Último teste: ${esc(g.teste.msg)}</p>` : ""}
     ${g.campos.map(campoHtml).join("")}
+    ${g.id === "google" ? `<div class="oauth"><b>Refresh token sem complicação</b><span>1. Salve o Client ID e o Client Secret. 2. No Google Cloud, em Credenciais, abra o seu Client ID e adicione em "URIs de redirecionamento autorizados" este endereço:</span>
+      <div class="cfin"><input readonly value="${esc(location.origin)}/api/google/callback" id="cbUrl"><button class="btn sm" data-copiar="cbUrl">Copiar</button></div>
+      <span>3. Clique em Conectar com Google e entre com a conta que administra a MCC. O TrafgFood guarda o refresh token sozinho.</span>
+      <a class="btn sm pri" href="/api/google/conectar" style="align-self:flex-start;text-decoration:none">Conectar com Google</a></div>` : ""}
     <div class="row"><button class="btn pri sm" data-salvar="${g.id}">Salvar</button>${g.id !== "acesso" ? `<button class="btn sm" data-testar="${g.id}">Testar conexão</button>` : ""}</div>
   </section>`; }).join("")}</div>
   ${DESKTOP ? `<section class="card cfg" style="margin-top:12px"><div class="cfh"><b>Programa</b></div><p class="sub" style="margin:0">O TrafgFood fica ligado em segundo plano. Para abrir de novo, use o ícone TrafgFood na área de trabalho ou no menu Iniciar.</p><div class="row"><button class="btn dng sm" data-act="desligar">Desligar o TrafgFood</button></div></section>` : ""}`;
@@ -555,6 +559,7 @@ function handleClick(e) {
   if (d.act === "nova") return novaCampanha();
   if (d.act === "novaloja") return editarLoja("");
   if (d.salvar) return salvarGrupo(d.salvar);
+  if (d.copiar) { const i = $("#" + d.copiar); return navigator.clipboard.writeText(i.value).then(() => toast("Copiado")).catch(() => { i.select(); }); }
   if (d.testar) return testarGrupo(d.testar);
   if (d.limpar) return api("/api/config", { [d.limpar]: null }).then((c) => { CONFIG = c; toast("Apagado"); load(true); }).catch((e) => toast(e.message));
   if (d.act === "desligar") return api("/api/desligar", {}).then(() => { document.body.innerHTML = `<div style="display:grid;place-items:center;height:100vh;text-align:center;padding:24px"><div><h2>TrafgFood desligado</h2><p style="color:var(--muted)">Para abrir de novo, use o ícone TrafgFood na área de trabalho.</p></div></div>`; }).catch((e) => toast(e.message));
@@ -571,6 +576,16 @@ function render() {
   $("#composer").hidden = state.tab !== "copiloto";
   if (state.tab === "copiloto") $("#chat").lastElementChild?.scrollIntoView({ block: "end" });
 }
+
+// Volta do "Conectar com Google".
+(function () {
+  const q = new URLSearchParams(location.search), g = q.get("google");
+  if (g === null) return;
+  state.tab = "config";
+  history.replaceState(null, "", "/");
+  setTimeout(() => toast(g === "ok" ? "Google Ads conectado. Refresh token salvo." : g), 400);
+})();
+if (location.hash === "#config") { state.tab = "config"; history.replaceState(null, "", "/"); }
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
 render();
