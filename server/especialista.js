@@ -1,5 +1,6 @@
 // Dicas do especialista para cada passo da criação de campanha, tiradas das bases de conhecimento.
-// Foco "comida" usa a base de restaurantes; foco "servico" usa a base de venda de serviços (quando existir).
+// Foco "comida" usa a base de restaurantes, "servico" a de venda de serviços e "produto" a de produtos digitais
+// (infoprodutos e sistemas para restaurantes).
 import fs from "node:fs";
 import path from "node:path";
 import { ROOT } from "./paths.js";
@@ -7,7 +8,7 @@ import { ROOT } from "./paths.js";
 const ler = (arq) => {
   try { return JSON.parse(fs.readFileSync(path.join(ROOT, "server", "knowledge", arq), "utf8")); } catch { return null; }
 };
-export const BASES = { comida: ler("base-trafego-delivery.json"), servico: ler("base-trafego-servicos.json") };
+export const BASES = { comida: ler("base-trafego-delivery.json"), servico: ler("base-trafego-servicos.json"), produto: ler("base-trafego-produtos-digitais.json") };
 
 const PADRAO = {
   comida: {
@@ -40,6 +41,21 @@ const PADRAO = {
     titulos: "Até 30 letras. Prometa resultado e prova: \"Consultoria para Delivery\", \"Diagnóstico Grátis do iFood\".",
     descricoes: "Até 90 letras. Oferta de entrada clara: \"Analisamos seu cardápio, preços e anúncios e mostramos onde aumentar o lucro.\"",
   },
+  produto: {
+    objetivo: {
+      whatsapp: "Bom para produto mais caro (mentoria, sistema com demonstração): a conversa tira dúvidas e fecha.",
+      trafego: "O padrão para infoproduto e sistema: leva direto para a página de vendas, checkout ou teste grátis. Instale o pixel e a API de Conversões para a Meta aprender com as compras.",
+      alcance: "Só para aquecer público antes de um lançamento.",
+    },
+    publico: "Donos de restaurante no Brasil inteiro, 25 a 60 anos. Teste aberto contra interesses como \"iFood\", \"Restaurante\", \"Gestão financeira\". O melhor público costuma ser o remarketing: quem viu seus vídeos, visitou a página ou abandonou o checkout.",
+    posicionamentos: "Automático para começar. Vídeo vertical curto mostrando a planilha ou o sistema funcionando costuma vender melhor em Reels e Stories.",
+    foto: "Mostre o produto em uso: tela do sistema calculando o CMV, a planilha preenchida, o antes e depois de um número. Evite promessa de ganho irreal (a Meta reprova).",
+    texto: "Dor + mecanismo + prova + oferta + chamada. Exemplo: \"Você sabe o CMV real do seu cardápio? Com a planilha Delivefood você calcula em 10 minutos e descobre quais pratos dão prejuízo. Acesso imediato.\"",
+    orcamento: "Calcule o custo por venda que você aguenta: preço − taxas da plataforma − impostos (mais upsell e order bump). Comece com um valor que permita algumas vendas por semana e só escale com ROAS acima do equilíbrio.",
+    palavras: "Use buscas de quem já procura a solução: \"planilha cmv\", \"como calcular cmv\", \"ficha técnica restaurante\", \"sistema para restaurante\", \"controle de custos restaurante\".",
+    titulos: "Até 30 letras. Produto + benefício: \"Planilha de CMV Pronta\", \"Calcule seu CMV em 10 Min\".",
+    descricoes: "Até 90 letras. Benefício, prova e acesso: \"Descubra quais pratos dão lucro. Usada por restaurantes de todo o Brasil. Acesso imediato.\"",
+  },
 };
 
 export function dicasCriacao(foco) {
@@ -50,6 +66,6 @@ export function dicasCriacao(foco) {
     baseCarregada: Boolean(BASES[foco]),
     ...PADRAO[foco],
     ganchos: fc.ganchos || [],
-    exemplos: fc.exemplos_de_textos || [],
+    exemplos: (fc.exemplos_de_textos || []).map((x) => (typeof x === "string" ? x : x?.texto)).filter(Boolean),
   };
 }

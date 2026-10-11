@@ -40,7 +40,7 @@ const platLabel = { meta: "Meta", google: "Google" };
 const TITULOS = { criar: "Nova campanha", painel: "Painel de resultados", campanhas: "Campanhas", copiloto: "Gestor de tráfego", clientes: "Lojas e contas", config: "Configurações" };
 
 let state = { foco: "todos", tab: "painel", client: "todos", plat: "todas", st: "todas", q: "", sort: { k: "gasto7", dir: -1 } };
-try { const t = localStorage.getItem("ct_tab"); if (TITULOS[t] && t !== "criar") state.tab = t; const f = localStorage.getItem("tf_foco"); if (["todos", "comida", "servico"].includes(f)) state.foco = f; } catch (e) {}
+try { const t = localStorage.getItem("ct_tab"); if (TITULOS[t] && t !== "criar") state.tab = t; const f = localStorage.getItem("tf_foco"); if (["todos", "comida", "servico", "produto"].includes(f)) state.foco = f; } catch (e) {}
 const lojasDoFoco = () => CLIENTES.filter((c) => state.foco === "todos" || (c.foco || "comida") === state.foco);
 const visiveis = () => CAMPANHAS.filter((c) => (state.client === "todos" ? lojasDoFoco().some((l) => l.id === c.clientId) : c.clientId === state.client) && (state.plat === "todas" || c.plataforma === state.plat));
 
@@ -94,7 +94,7 @@ $("#refreshBtn").addEventListener("click", async () => { toast("Atualizando núm
 function renderFilters() {
   const f = $("#filters");
   const items = [["todos", "Todos"], ...lojasDoFoco().map((c) => [c.id, c.nome])];
-  const focos = CLIENTES.some((c) => c.foco === "servico") ? `<span class="foco" role="group" aria-label="Foco">${[["todos", "Tudo"], ["comida", "Comida"], ["servico", "Serviço"]].map(([v, t]) => `<button class="chip" data-foco="${v}" aria-pressed="${state.foco === v}">${t}</button>`).join("")}</span>` : "";
+  const focos = CLIENTES.some((c) => c.foco && c.foco !== "comida") ? `<span class="foco" role="group" aria-label="Foco">${[["todos", "Tudo"], ["comida", "Comida"], ["servico", "Serviço"], ["produto", "Produto digital"]].map(([v, t]) => `<button class="chip" data-foco="${v}" aria-pressed="${state.foco === v}">${t}</button>`).join("")}</span>` : "";
   f.innerHTML = focos + items.map(([id, n]) => `<button class="chip" data-c="${esc(id)}" aria-pressed="${state.client === id}">${esc(n)}</button>`).join("");
   f.hidden = ["copiloto", "clientes", "config", "criar"].includes(state.tab);
   const hora = ATUALIZADO ? " · atualizado às " + ATUALIZADO.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
@@ -292,7 +292,7 @@ function editarLoja(id) {
   sheet(`<h3>${c.id ? "Editar loja" : "Nova loja"}</h3>
     <p class="sub" style="margin:-4px 0 8px">${c.id ? "Dados usados nos cálculos de ROAS mínimo e custo máximo por pedido." : "Cadastre o restaurante e as contas de anúncio dele."}</p>
     <div class="field"><label for="lj-nome">Nome</label><input id="lj-nome" value="${esc(c.nome || "")}"></div>
-    <div class="field"><label>Foco</label><div class="pick" id="lj-foco">${[["comida", "Comida", "Restaurante vendendo pedidos"], ["servico", "Serviço", "Consultoria, gestão de tráfego, outros serviços"]].map(([v, t, s]) => `<button type="button" class="pk" data-lf="${v}" aria-pressed="${(c.foco || "comida") === v}"><b>${t}</b><small>${s}</small></button>`).join("")}</div></div>
+    <div class="field"><label>Foco</label><div class="pick" id="lj-foco">${[["comida", "Comida", "Restaurante vendendo pedidos"], ["servico", "Serviço", "Consultoria, gestão de tráfego, outros serviços"], ["produto", "Produto digital", "Cursos, planilhas e sistemas (CMV, custos)"]].map(([v, t, s]) => `<button type="button" class="pk" data-lf="${v}" aria-pressed="${(c.foco || "comida") === v}"><b>${t}</b><small>${s}</small></button>`).join("")}</div></div>
     <div class="field"><label for="lj-end">Endereço completo (para anunciar no raio)</label><input id="lj-end" placeholder="Rua, número, bairro, cidade - UF" value="${esc(c.endereco || "")}">${c.endereco ? `<span class="sub" style="margin:0">${c.lat != null ? "Localização encontrada no mapa." : "Não encontrei esse endereço no mapa. Confira rua, número e cidade."}</span>` : ""}</div>
     <div class="grid2"><div class="field"><label for="lj-cid">Cidade / bairro</label><input id="lj-cid" value="${esc(c.cidade || "")}"></div>
     <div class="field"><label for="lj-tk">Ticket médio (R$)</label><input id="lj-tk" type="number" inputmode="decimal" value="${esc(c.ticket || "")}"></div></div>
@@ -466,14 +466,15 @@ function novaCampanha(pre = {}, rascunhoId = null) {
 function ncInit(pre = {}, rascunhoId = null) {
   const loja = CLIENTES.find((c) => c.id === (pre.clientId || (state.client !== "todos" ? state.client : ""))) || CLIENTES[0];
   if (!loja) { toast("Cadastre uma loja primeiro em Lojas e contas."); return false; }
-  NC = { plataforma: loja.metaAdAccountId || !loja.googleCustomerId ? "meta" : "google", objetivo: "whatsapp", area: loja.foco === "servico" ? "brasil" : "raio", raio: 5, idadeMin: loja.foco === "servico" ? 25 : 18, idadeMax: 65,
+  NC = { plataforma: loja.metaAdAccountId || !loja.googleCustomerId ? "meta" : "google", objetivo: loja.foco === "produto" ? "trafego" : "whatsapp", area: loja.foco && loja.foco !== "comida" ? "brasil" : "raio", raio: 5, idadeMin: loja.foco && loja.foco !== "comida" ? 25 : 18, idadeMax: 65,
     posAuto: true, posicionamentos: [], interesses: [], botao: "ORDER_NOW", orcamento: 30, palavras: [], titulos: [], descricoes: [], ...pre, clientId: loja.id, rascunhoId };
   if (pre.posicionamentos?.length) NC.posAuto = false;
   if (!NC.nome) NC.nome = `${loja.nome} · ${new Date().toLocaleDateString("pt-BR")}`;
   return true;
 }
 const ncLoja = () => cli(NC.clientId) || {};
-const ncFoco = () => (ncLoja().foco === "servico" ? "servico" : "comida");
+const FOCO_NOME = { comida: "Comida", servico: "Serviço", produto: "Produto digital" };
+const ncFoco = () => (FOCO_NOME[ncLoja().foco] ? ncLoja().foco : "comida");
 async function ncDicas() {
   const f = ncFoco();
   if (!DICAS[f]) { try { DICAS[f] = await api("/api/especialista?foco=" + f); } catch (_) { DICAS[f] = {}; } if (state.tab === "criar") render(); }
@@ -488,7 +489,7 @@ function viewCriar() {
   const cnt = (v, max) => `<span class="cnt">${String(v || "").length}/${max}</span>`;
   const linhas = (arr) => esc((arr || []).join("\n"));
   const topo = passo(1, "Onde anunciar", `
-    <div class="field"><label for="w-loja">Loja ou negócio</label><select id="w-loja">${CLIENTES.map((c) => `<option value="${esc(c.id)}" ${c.id === NC.clientId ? "selected" : ""}>${esc(c.nome)} · ${c.foco === "servico" ? "Serviço" : "Comida"}</option>`).join("")}</select></div>
+    <div class="field"><label for="w-loja">Loja ou negócio</label><select id="w-loja">${CLIENTES.map((c) => `<option value="${esc(c.id)}" ${c.id === NC.clientId ? "selected" : ""}>${esc(c.nome)} · ${FOCO_NOME[c.foco] || "Comida"}</option>`).join("")}</select></div>
     <div class="pick">${[["meta", "Meta", "Facebook e Instagram"], ["google", "Google Ads", "Pesquisa no Google"]].map(([v, t, s]) => `<button type="button" class="pk" data-w-plat="${v}" aria-pressed="${NC.plataforma === v}"><b>${t}</b><small>${s}</small></button>`).join("")}</div>
     ${meta && !loja.metaAdAccountId ? `<div class="aviso">Esta loja não tem conta de anúncio Meta. Cadastre em Lojas e contas.</div>` : ""}
     ${!meta && !loja.googleCustomerId ? `<div class="aviso">Esta loja não tem ID de cliente Google Ads. Cadastre em Lojas e contas.</div>` : ""}
@@ -499,7 +500,7 @@ function viewCriar() {
     <div class="field"><label for="w-orc">Orçamento diário (R$)</label><input id="w-orc" type="number" inputmode="numeric" min="6" step="5" value="${esc(NC.orcamento)}"><span class="sub" style="margin:0">Até ${brl((Number(NC.orcamento) || 0) * 30)} por mês.</span></div>
     ${dica(d.orcamento)}`);
   const publico = passo(3, meta ? "Público (conjunto de anúncios)" : "Região e palavras-chave", `
-    <div class="field"><label>Onde</label><div class="pick">${[["raio", "Raio em volta da loja", loja.endereco ? loja.endereco : "Cadastre o endereço da loja"], ["brasil", "Brasil inteiro", "Bom para venda de serviço"]].map(([v, t, s]) => `<button type="button" class="pk" data-w-area="${v}" aria-pressed="${NC.area === v}"><b>${t}</b><small>${esc(s)}</small></button>`).join("")}</div></div>
+    <div class="field"><label>Onde</label><div class="pick">${[["raio", "Raio em volta da loja", loja.endereco ? loja.endereco : "Cadastre o endereço da loja"], ["brasil", "Brasil inteiro", "Para serviço e produto digital"]].map(([v, t, s]) => `<button type="button" class="pk" data-w-area="${v}" aria-pressed="${NC.area === v}"><b>${t}</b><small>${esc(s)}</small></button>`).join("")}</div></div>
     ${NC.area === "raio" ? `<div class="field"><label for="w-raio">Raio (km)</label><input id="w-raio" type="number" min="1" max="40" value="${esc(NC.raio)}"></div>${loja.lat == null ? `<div class="aviso">Falta o endereço da loja para anunciar no raio. Cadastre em Lojas e contas.</div>` : ""}` : ""}
     ${meta ? `<div class="grid2"><div class="field"><label for="w-imin">Idade mínima</label><input id="w-imin" type="number" min="18" max="65" value="${esc(NC.idadeMin)}"></div><div class="field"><label for="w-imax">Idade máxima</label><input id="w-imax" type="number" min="18" max="65" value="${esc(NC.idadeMax)}"></div></div>
       <div class="field"><label for="w-int">Interesses (opcional, um por linha)</label><textarea id="w-int" rows="3" placeholder="Ex.: Restaurante&#10;iFood&#10;Empreendedorismo">${linhas(NC.interesses)}</textarea></div>

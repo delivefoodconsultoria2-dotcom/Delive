@@ -86,7 +86,7 @@ async function tratar(msg) {
   try {
     let result;
     if (method === "initialize") {
-      result = { protocolVersion: params?.protocolVersion || "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "trafgfood", version: "1.2.0" }, instructions: INSTRUCOES };
+      result = { protocolVersion: params?.protocolVersion || "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "trafgfood", version: "1.3.0" }, instructions: INSTRUCOES };
     } else if (method === "ping") result = {};
     else if (method === "tools/list") result = { tools: await listarFerramentas() };
     else if (method === "tools/call") {

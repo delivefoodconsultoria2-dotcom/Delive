@@ -1,0 +1,819 @@
+{
+ "metadata": {
+  "titulo": "Base de Conhecimento de Tráfego Pago para Venda de Produtos Digitais (Infoprodutos e SaaS para Restaurantes)",
+  "marca": "Delivefood",
+  "idioma": "pt-BR",
+  "versao": "1.0.0",
+  "data_atualizacao": "2026-10-11",
+  "finalidade": "Alimentar um gestor de tráfego com IA que opera Meta Ads (Facebook/Instagram) e Google Ads (Pesquisa, YouTube/Demand Gen, Performance Max) para vender produtos digitais da Delivefood Consultoria a donos de restaurantes no Brasil: infoprodutos (cursos, e-books, planilhas, mentorias, aulões) vendidos via Hotmart/Kiwify/Eduzz e sistemas/SaaS (controle de CMV, custos fixos, ficha técnica, precificação) vendidos por teste grátis, demonstração ou assinatura.",
+  "publico_alvo": [
+   "equipe de marketing e produto Delivefood",
+   "gestor de tráfego com IA",
+   "produtores de infoprodutos e empresas de software para food service"
+  ],
+  "aviso": "Todos os números desta base são hipóteses de trabalho, nunca benchmarks garantidos. Validar com dados da conta, da plataforma de checkout e do sistema de assinaturas. Regras, taxas e recursos de Meta, Google, Hotmart, Kiwify e Eduzz mudam: confirmar na central de ajuda oficial antes de afirmar requisitos ou valores."
+ },
+ "configuracao_do_especialista": {
+  "nome": "Especialista Delivefood em Tráfego para Produtos Digitais",
+  "posicionamento": "Gestor de tráfego sênior focado em vendas diretas de infoprodutos e aquisição de assinantes de software para restaurantes, com domínio de funis perpétuos, lançamentos e funis de trial/demo.",
+  "missao": "Transformar verba de mídia em vendas lucrativas e assinantes que permanecem — medindo por lucro, ROAS de equilíbrio, LTV e payback, não por cliques ou leads baratos.",
+  "dominios": [
+   "Meta Ads: campanhas de vendas (Advantage+), cadastros, otimização para Purchase/Lead/StartTrial",
+   "Google Ads: Pesquisa de alta intenção, YouTube/Demand Gen, Performance Max",
+   "rastreamento: Pixel, API de Conversões, tag do Google, conversões otimizadas",
+   "integração com Hotmart, Kiwify, Eduzz e gateways de assinatura",
+   "funis: low ticket com order bump/upsell, webinar/aulão, VSL, lançamento, trial/demo",
+   "unit economics: CPA, ROAS, AOV, LTV, churn, CAC payback"
+  ],
+  "postura": [
+   "Direto, analítico, orientado a lucro.",
+   "Separar fato, inferência, hipótese e recomendação.",
+   "Mostrar cálculos e premissas.",
+   "Contexto Brasil: BRL, Pix, boleto, parcelamento, WhatsApp, LGPD.",
+   "Nunca prometer faturamento, lucro ou economia garantida ao comprador."
+  ],
+  "prompt_base": "Você é o Especialista Delivefood em Tráfego para Produtos Digitais. Seu objetivo é vender, com lucro, infoprodutos (cursos, planilhas, e-books, mentorias, aulões sobre CMV, precificação, custos e delivery) e sistemas/SaaS para restaurantes (controle de CMV, custos fixos, ficha técnica, precificação). Antes de recomendar campanhas, levante: produto, preço, taxas da plataforma e impostos, order bumps e upsells, modelo (venda única, assinatura, trial, demo), taxa de conversão da página, histórico, verba e status do rastreamento (Pixel + API de Conversões, tag do Google, integração com Hotmart/Kiwify/Eduzz). Calcule ROAS de equilíbrio e CPA máximo (infoproduto) ou CAC máximo e payback (SaaS). Otimize para o evento de fundo de funil (Purchase, StartTrial, Subscribe) assim que houver volume. Não invente dados nem benchmarks: marque números como hipóteses e diga como validar. Respeite as políticas de anúncios: nada de promessas de renda, enriquecimento rápido ou resultados irreais.",
+  "formato_padrao_de_resposta": [
+   "Diagnóstico",
+   "Produto, oferta e modelo de funil",
+   "Conta econômica (ROAS de equilíbrio / CPA ou CAC máximo)",
+   "Canais e campanhas",
+   "Públicos e palavras-chave",
+   "Criativos e copy",
+   "Página de vendas e checkout",
+   "Orçamento e distribuição",
+   "Rastreamento e eventos",
+   "Regras de decisão",
+   "Próximos testes e riscos"
+  ]
+ },
+ "principios_centrais": [
+  {
+   "id": "PD01",
+   "titulo": "Lucro, não ROAS bruto",
+   "conteudo": "Infoproduto paga taxa de plataforma, impostos, afiliados/coprodução e reembolsos. ROAS 2 pode dar prejuízo dependendo da estrutura.",
+   "acao_da_ia": "Calcular sempre o ROAS de equilíbrio líquido antes de julgar uma campanha."
+  },
+  {
+   "id": "PD02",
+   "titulo": "Oferta e página antes de verba",
+   "conteudo": "Tráfego amplifica o que existe: oferta fraca ou página que não converte só gasta mais rápido.",
+   "acao_da_ia": "Revisar promessa, preço, bumps, prova e taxa de conversão da página antes de escalar."
+  },
+  {
+   "id": "PD03",
+   "titulo": "Otimizar para o evento que paga a conta",
+   "conteudo": "Meta e Google entregam para quem tende a executar o evento escolhido. Otimizar para clique ou visualização traz curiosos.",
+   "acao_da_ia": "Usar Purchase (infoproduto), StartTrial/Subscribe ou Lead qualificado (SaaS) como evento de otimização, com Pixel + API de Conversões e conversões otimizadas no Google."
+  },
+  {
+   "id": "PD04",
+   "titulo": "Front-end paga a mídia, back-end gera lucro",
+   "conteudo": "Produtos de entrada de baixo valor com order bump e upsell podem se pagar e gerar lista de compradores para mentoria, curso maior ou sistema.",
+   "acao_da_ia": "Medir ROAS de front-end e receita por comprador em 30/90 dias separadamente."
+  },
+  {
+   "id": "PD05",
+   "titulo": "SaaS se mede por retenção",
+   "conteudo": "Assinante que cancela no 2º mês não paga o CAC. Ativação (primeira ficha técnica, primeiro CMV calculado) prediz retenção.",
+   "acao_da_ia": "Acompanhar trial→pago, ativação, churn e CAC payback; não escalar por custo de trial sozinho."
+  },
+  {
+   "id": "PD06",
+   "titulo": "Intenção primeiro, demanda depois",
+   "conteudo": "Quem busca 'planilha de CMV' ou 'sistema para restaurante' já tem a dor declarada; Meta e YouTube criam demanda em quem não procura.",
+   "acao_da_ia": "Com verba pequena, combinar Google Pesquisa de alta intenção + Meta vendas + remarketing."
+  },
+  {
+   "id": "PD07",
+   "titulo": "Prova sem promessa irreal",
+   "conteudo": "Dono de restaurante desconfia de promessas. Demonstração da ferramenta, antes/depois de planilha e depoimentos com contexto convencem mais. Políticas da Meta proíbem resultados irreais e promessas de renda.",
+   "acao_da_ia": "Usar demonstração e casos com contexto, sem garantir lucro, economia ou faturamento."
+  }
+ ],
+ "dados_minimos_do_produto": [
+  "nome, tipo e promessa específica do produto (ex.: 'calcular o CMV de cada prato')",
+  "preço, formas de pagamento (Pix, cartão, boleto, parcelamento) e garantia",
+  "plataforma de checkout (Hotmart/Kiwify/Eduzz/gateway próprio) e taxas vigentes",
+  "alíquota de impostos do vendedor e comissões de afiliados/coprodutores",
+  "order bumps, upsells, downsells e seus preços e taxas de aceitação",
+  "taxa de reembolso/chargeback",
+  "para SaaS: preço mensal/anual, duração do trial, trial com ou sem cartão, taxa trial→pago, churn mensal, margem bruta",
+  "taxa de conversão da página de vendas e do checkout",
+  "histórico de campanhas (CPA, ROAS, CPM, CTR) e verba disponível",
+  "status do rastreamento: Pixel, API de Conversões, tag do Google, integração da plataforma",
+  "provas disponíveis: depoimentos, prints autorizados, demonstrações, número de alunos/clientes reais",
+  "lista de compradores/leads (para públicos semelhantes e Customer Match, respeitando LGPD)"
+ ],
+ "tipos_de_produto": [
+  {
+   "tipo": "Low ticket (planilha, e-book, minicurso de entrada)",
+   "modelo_de_funil": "Perpétuo: anúncio → página de vendas curta ou VSL → checkout com order bump → upsell pós-compra → e-mail/WhatsApp para oferta principal.",
+   "objetivo_de_campanha": "Meta: Vendas otimizando Purchase (Advantage+ quando houver histórico). Google: Pesquisa para termos de alta intenção ('planilha cmv').",
+   "metricas": [
+    "CPA",
+    "ROAS de front-end",
+    "taxa de aceitação do order bump",
+    "AOV",
+    "receita por comprador 30 dias"
+   ]
+  },
+  {
+   "tipo": "Curso online (ticket médio)",
+   "modelo_de_funil": "Perpétuo com VSL ou webinar/aulão gravado; ou lançamento (semente/interno) com captação de leads, conteúdo e carrinho aberto.",
+   "objetivo_de_campanha": "Meta: Vendas (Purchase) no perpétuo; Cadastros (Lead) na captação de lançamento + remarketing de vendas no carrinho aberto. Google: Pesquisa + YouTube remarketing.",
+   "metricas": [
+    "CPL",
+    "custo por inscrito presente no aulão",
+    "taxa lead→venda",
+    "CPA",
+    "ROAS",
+    "reembolso"
+   ]
+  },
+  {
+   "tipo": "Mentoria / consultoria em grupo (high ticket)",
+   "modelo_de_funil": "Aplicação/formulário → call de diagnóstico via WhatsApp ou videochamada → venda consultiva. Frequentemente vendida para a base de compradores do low ticket.",
+   "objetivo_de_campanha": "Meta: Cadastros com formulário de maior intenção ou conversões no site (Lead qualificado via CAPI). Google: Pesquisa de marca e termos de consultoria.",
+   "metricas": [
+    "custo por aplicação qualificada",
+    "custo por call realizada",
+    "taxa de fechamento",
+    "CAC",
+    "margem por aluno"
+   ]
+  },
+  {
+   "tipo": "Planilha / template (produto de entrada técnico)",
+   "modelo_de_funil": "Venda direta barata ou isca gratuita (lead magnet) que leva ao sistema ou curso. Demonstração da planilha preenchida no criativo.",
+   "objetivo_de_campanha": "Meta: Vendas (Purchase) se paga; Cadastros (Lead) se isca. Google: Pesquisa 'planilha cmv', 'planilha ficha técnica'.",
+   "metricas": [
+    "CPA ou CPL",
+    "taxa de conversão isca→compra/trial",
+    "receita por lead"
+   ]
+  },
+  {
+   "tipo": "SaaS por assinatura (sistema de CMV, custos fixos, ficha técnica, precificação)",
+   "modelo_de_funil": "Trial grátis (self-service) para ticket baixo e produto simples; demonstração agendada para ticket maior ou implantação complexa; onboarding ativo para atingir o 'momento aha'.",
+   "objetivo_de_campanha": "Meta: Vendas/Leads otimizando StartTrial (ou CompleteRegistration) e depois Subscribe quando houver volume. Google: Pesquisa 'sistema para restaurante', 'controle de cmv', PMax com conversão de trial/assinatura e valor.",
+   "metricas": [
+    "custo por trial",
+    "taxa de ativação",
+    "trial→pago",
+    "CAC",
+    "churn mensal",
+    "LTV",
+    "CAC payback"
+   ]
+  }
+ ],
+ "objetivos_e_quando_usar": [
+  {
+   "objetivo": "Meta — Vendas (Advantage+ ou manual)",
+   "quando_usar": "Venda direta de infoproduto ou assinatura com Pixel + API de Conversões enviando Purchase/Subscribe. Não precisa de catálogo para produto digital.",
+   "cuidado": "Sem volume de conversões a fase de aprendizado se prolonga; considerar otimizar um evento acima (InitiateCheckout) temporariamente."
+  },
+  {
+   "objetivo": "Meta — Cadastros",
+   "quando_usar": "Captação de lançamento, inscrição em aulão/webinar, isca gratuita, aplicação para mentoria, pedido de demonstração.",
+   "cuidado": "Formulário instantâneo de volume tende a trazer leads frios; preferir maior intenção ou página própria."
+  },
+  {
+   "objetivo": "Meta — Engajamento/ThruPlay",
+   "quando_usar": "Apenas para construir públicos de visualização de vídeo para remarketing, com verba pequena.",
+   "cuidado": "Não avaliar por vendas diretas."
+  },
+  {
+   "objetivo": "Google — Pesquisa",
+   "quando_usar": "Sempre que houver busca pelo problema/solução: 'como calcular cmv', 'planilha de custos restaurante', 'sistema de ficha técnica'.",
+   "cuidado": "Negativar termos de emprego, 'grátis' (se for pago), cursos acadêmicos e concorrentes irrelevantes."
+  },
+  {
+   "objetivo": "Google — YouTube / Demand Gen",
+   "quando_usar": "Vídeos educativos e VSL para gerar demanda e remarketing de visitantes; bom para aulões e cursos.",
+   "cuidado": "Exige criativo em vídeo e conversões medidas; avaliar com janela e conversões view-through com cautela."
+  },
+  {
+   "objetivo": "Google — Performance Max",
+   "quando_usar": "Após ter conversões confiáveis (Purchase/Subscribe com valor) e criativos variados; amplia alcance em todas as redes Google.",
+   "cuidado": "Pode canibalizar marca e mascarar termos; acompanhar relatórios de insights/termos e excluir marca quando possível."
+  }
+ ],
+ "funil_recomendado": {
+  "perpetuo_low_ticket": {
+   "etapas": [
+    "Anúncio com gancho de dor (CMV, preço errado, custo fixo)",
+    "Página de vendas curta ou VSL",
+    "Checkout com 1–2 order bumps complementares",
+    "Upsell/downsell pós-compra (one-click quando a plataforma permitir)",
+    "Entrega + sequência de e-mail/WhatsApp com oferta principal (curso, mentoria ou trial do sistema)"
+   ],
+   "observacao": "Meta comum é o front-end empatar ou dar pequeno lucro e o back-end gerar margem (hipótese — validar com dados da própria conta)."
+  },
+  "webinar_aulao": {
+   "etapas": [
+    "Anúncio de inscrição em aulão gratuito (ex.: 'Aula: descubra o CMV real do seu cardápio')",
+    "Página de inscrição + grupo/lembretes por WhatsApp e e-mail",
+    "Aulão ao vivo ou gravado (evergreen) com conteúdo útil + oferta",
+    "Remarketing para presentes, ausentes e quem abriu o checkout",
+    "Encerramento com prazo real (bônus ou condição que de fato expira)"
+   ],
+   "observacao": "Medir custo por inscrito, taxa de presença e vendas por inscrito; prazos e escassez devem ser verdadeiros."
+  },
+  "lancamento": {
+   "etapas": [
+    "Semente: oferta pequena para a base atual para validar promessa",
+    "Interno: vender para lista/seguidores sem anúncios pesados",
+    "Lançamento pago: captação de leads (Cadastros), aquecimento com conteúdo (CPLs/aulas), carrinho aberto com remarketing de vendas, fechamento",
+    "Pós-lançamento: perpetuar a oferta vencedora"
+   ],
+   "observacao": "Exige calendário, verba concentrada e capacidade de produção de conteúdo; mais risco que o perpétuo, bom para cursos e mentorias."
+  },
+  "saas_trial_demo": {
+   "etapas": [
+    "Anúncio demonstrando a ferramenta resolvendo uma dor concreta (ex.: CMV por prato em minutos)",
+    "Landing page com vídeo da tela, preço claro e CTA de teste grátis ou agendar demonstração",
+    "Cadastro curto → onboarding guiado até o primeiro resultado (importar insumos, criar ficha técnica, ver CMV)",
+    "Nutrição por e-mail/WhatsApp durante o trial + contato humano para contas engajadas",
+    "Conversão para pago; eventos StartTrial e Subscribe enviados para Meta e Google"
+   ],
+   "observacao": "Trial self-service para produto simples e ticket baixo; demo quando há implantação ou ticket alto. Testar trial com cartão vs. sem cartão: muda volume e qualidade (hipótese — validar com dados da própria conta)."
+  }
+ },
+ "estrutura_de_campanhas": {
+  "aviso": "Percentuais são hipóteses iniciais; redistribuir por CPA/ROAS e volume reais.",
+  "verba_baixa_ate_R$100_dia": {
+   "distribuicao": {
+    "Google Pesquisa alta intenção": "40%",
+    "Meta Vendas (prospecção ampla/interesses)": "45%",
+    "Remarketing Meta (vídeo, página, checkout)": "15%"
+   },
+   "observacao": "Uma campanha por canal, poucos conjuntos, 3–6 criativos; evitar fragmentar o aprendizado."
+  },
+  "verba_media_R$100_a_500_dia": {
+   "distribuicao": {
+    "Meta Vendas/Advantage+ prospecção": "50%",
+    "Google Pesquisa": "25%",
+    "Remarketing Meta + YouTube": "15%",
+    "Testes de criativo": "10%"
+   },
+   "observacao": "Separar campanha de teste de criativos da campanha de escala; levar vencedores para escala."
+  },
+  "verba_alta_acima_R$500_dia": {
+   "distribuicao": {
+    "Meta Advantage+ vendas": "45%",
+    "Google Pesquisa + PMax": "25%",
+    "YouTube/Demand Gen": "10%",
+    "Remarketing multicanal": "10%",
+    "Testes (ofertas, ângulos, públicos)": "10%"
+   },
+   "observacao": "Incluir testes de oferta (preço, bumps), não só de criativo; acompanhar frequência e saturação."
+  },
+  "nomenclatura": "[CANAL]_[PRODUTO]_[OBJETIVO]_[PUBLICO]_[DATA] — ex.: META_PLANILHACMV_VENDAS_ABERTO_2026-10"
+ },
+ "publicos": {
+  "meta": {
+   "prospeccao": [
+    "público aberto (Advantage+) com criativo que qualifica: 'dono de restaurante', 'delivery', 'CMV'",
+    "interesses: restaurantes, gestão de restaurantes, food service, iFood/delivery, empreendedorismo, administradores de pequenas empresas, gastronomia profissional",
+    "semelhantes (lookalike) de compradores, assinantes pagantes e alunos — priorizar compradores sobre leads"
+   ],
+   "remarketing": [
+    "visualizadores de 50%/75% dos vídeos",
+    "visitantes da página de vendas (7–30 dias)",
+    "InitiateCheckout sem Purchase (abandono de checkout)",
+    "inscritos no aulão que não compraram",
+    "trials sem conversão para pago",
+    "engajados do Instagram/Facebook"
+   ],
+   "exclusoes": [
+    "compradores do produto anunciado",
+    "assinantes ativos"
+   ]
+  },
+  "google": {
+   "palavras_chave_alta_intencao": [
+    "planilha cmv",
+    "planilha de cmv restaurante",
+    "como calcular cmv",
+    "calcular cmv restaurante",
+    "ficha técnica restaurante",
+    "planilha ficha técnica",
+    "precificação de cardápio",
+    "como precificar prato",
+    "custo fixo restaurante",
+    "sistema para restaurante",
+    "sistema de gestão para restaurante",
+    "controle de estoque restaurante",
+    "software cmv",
+    "sistema ficha técnica"
+   ],
+   "correspondencia": "Começar com frase e exata nos termos de maior intenção; ampla somente com Smart Bidding e conversões confiáveis.",
+   "negativas_sugeridas": [
+    "vaga",
+    "emprego",
+    "salário",
+    "tcc",
+    "faculdade",
+    "pdf grátis (se o produto for pago)",
+    "contabilidade pública",
+    "significado"
+   ],
+   "customer_match": "Listas de compradores e leads com consentimento, para exclusão e semelhantes."
+  }
+ },
+ "framework_de_criativos": {
+  "formula": "Gancho (dor ou curiosidade específica do dono de restaurante) → problema com número ou cena real → solução/demonstração do produto → prova (depoimento, tela, resultado com contexto) → oferta clara (preço, bônus, garantia ou trial) → CTA.",
+  "ganchos": [
+   "Você sabe quanto custa de verdade o prato que mais vende?",
+   "Vender muito e sobrar pouco no fim do mês tem nome: CMV fora de controle.",
+   "Se o seu preço foi copiado do concorrente, leia isso.",
+   "3 custos fixos que donos de restaurante esquecem de colocar no preço.",
+   "Delivery com 30% de taxa: seu cardápio está pagando essa conta?",
+   "Ficha técnica não é burocracia, é o que protege sua margem.",
+   "Faça este teste: pegue seu prato campeão e calcule o CMV agora.",
+   "Pare de anotar custos no caderno.",
+   "O erro de precificação mais comum em restaurante pequeno.",
+   "Seu estoque está sumindo e você só percebe no fechamento?"
+  ],
+  "angulos": [
+   "dor financeira (margem baixa apesar de vender)",
+   "controle e tranquilidade (saber os números)",
+   "tempo (fazer em minutos o que leva horas)",
+   "delivery e taxas de aplicativo",
+   "comparação caderno/planilha caótica vs. sistema",
+   "autoridade da consultoria Delivefood",
+   "educativo (ensinar um pedaço do método no anúncio)"
+  ],
+  "provas": [
+   "demonstração em vídeo da planilha ou do sistema (tela real)",
+   "depoimentos de donos de restaurante com nome e autorização",
+   "antes/depois do cálculo de CMV com contexto (sem prometer resultado igual)",
+   "número real de alunos/clientes",
+   "bastidores de consultoria",
+   "garantia legal de 7 dias (CDC, art. 49) ou garantia própria"
+  ],
+  "ctas": [
+   "Comprar agora",
+   "Garantir minha planilha",
+   "Quero a aula gratuita",
+   "Começar teste grátis",
+   "Agendar demonstração",
+   "Saiba mais"
+  ],
+  "exemplos_de_textos": [
+   {
+    "tipo": "infoproduto",
+    "texto": "Você sabe o CMV do seu prato mais vendido? Com a Planilha de CMV Delivefood você cadastra insumos, monta a ficha técnica e vê o custo de cada prato. Acesso imediato. 7 dias de garantia."
+   },
+   {
+    "tipo": "infoproduto",
+    "texto": "Aula gratuita para donos de restaurante: como precificar o cardápio considerando CMV, custos fixos e taxas do delivery. Ao vivo, com exemplos reais. Garanta sua vaga."
+   },
+   {
+    "tipo": "infoproduto",
+    "texto": "Preço copiado do concorrente não paga suas contas. No curso Precificação de Cardápio você aprende passo a passo a calcular o preço certo de cada prato. Conheça o conteúdo."
+   },
+   {
+    "tipo": "sistema",
+    "texto": "Chega de caderno e planilha quebrada. O sistema Delivefood calcula o CMV de cada prato automaticamente a partir da ficha técnica. Teste grátis, sem compromisso."
+   },
+   {
+    "tipo": "sistema",
+    "texto": "Custos fixos, CMV e margem por prato em uma tela só. Veja em 2 minutos como o sistema Delivefood organiza os números do seu restaurante. Agende uma demonstração."
+   },
+   {
+    "tipo": "sistema",
+    "texto": "O preço do insumo subiu? O sistema atualiza o custo de todas as fichas técnicas e mostra quais pratos perderam margem. Comece seu teste grátis."
+   }
+  ],
+  "roteiro_de_video_curto": {
+   "duracao": "15–45 segundos, vertical 9:16, legendas embutidas",
+   "estrutura": [
+    "0–3s: gancho falado + texto na tela (ex.: 'Quanto custa de verdade esse hambúrguer?')",
+    "3–10s: problema em cena real (cozinha, comanda, caderno de custos)",
+    "10–25s: demonstração na tela da planilha/sistema calculando o CMV",
+    "25–35s: prova (depoimento curto ou número real com contexto)",
+    "35–45s: oferta e CTA (preço/trial/garantia)"
+   ],
+   "dicas": [
+    "gravar com o próprio consultor ou cliente real",
+    "variar 3–5 ganchos para o mesmo corpo de vídeo",
+    "sem música alta cobrindo a fala; legendas sempre"
+   ]
+  }
+ },
+ "pagina_de_vendas_e_checkout": {
+  "pagina_de_vendas": [
+   "promessa específica no título, coerente com o anúncio",
+   "vídeo (VSL ou demonstração) acima da dobra quando possível",
+   "para quem é / para quem não é",
+   "o que o comprador recebe (módulos, planilha, acesso, suporte)",
+   "prova: depoimentos, prints autorizados, demonstração",
+   "preço com ancoragem honesta, parcelamento e Pix",
+   "garantia e política de reembolso claras",
+   "FAQ com objeções (tempo, dificuldade, funciona para delivery?)",
+   "carregamento rápido no celular; maior parte do tráfego é mobile"
+  ],
+  "checkout": [
+   "checkout da plataforma (Hotmart/Kiwify/Eduzz) com poucos campos",
+   "order bump complementar e barato (ex.: pack de fichas técnicas prontas, planilha de custos fixos)",
+   "upsell pós-compra relacionado (curso completo, mentoria em grupo, trial estendido do sistema)",
+   "Pix e cartão parcelado habilitados; boleto conforme público",
+   "recuperação de carrinho/Pix pendente por e-mail/WhatsApp, com consentimento",
+   "eventos InitiateCheckout e Purchase disparando com valor e moeda corretos"
+  ],
+  "saas": [
+   "preço visível ou 'a partir de'",
+   "CTA único (trial ou demo) por página",
+   "cadastro curto; pedir dados de negócio depois do primeiro acesso",
+   "onboarding para o primeiro resultado em minutos"
+  ]
+ },
+ "mensuracao": {
+  "metricas": {
+   "CPA": "Investimento ÷ compras (ou trials/assinaturas).",
+   "ROAS de front-end": "Receita do produto anunciado (+bumps) ÷ investimento, sem back-end.",
+   "AOV": "Receita total do pedido (produto + order bumps + upsells) ÷ número de pedidos.",
+   "LTV": "Receita (ou margem) média por cliente ao longo da vida; SaaS: ticket mensal × margem bruta ÷ churn mensal.",
+   "trial_para_pago": "Assinaturas pagas ÷ trials iniciados no mesmo período (por coorte).",
+   "churn": "Cancelamentos no mês ÷ assinantes no início do mês.",
+   "CAC payback": "CAC ÷ (ticket mensal × margem bruta) = meses para recuperar o custo de aquisição."
+  },
+  "eventos_pixel_capi": {
+   "PageView": "todas as páginas",
+   "ViewContent": "página de vendas/landing",
+   "Lead": "inscrição em aulão, isca, aplicação, pedido de demo",
+   "InitiateCheckout": "abertura do checkout",
+   "Purchase": "compra aprovada, com value e currency=BRL",
+   "StartTrial": "início do teste grátis (evento padrão Meta)",
+   "Subscribe": "primeira cobrança paga da assinatura",
+   "CompleteRegistration": "cadastro concluído no sistema"
+  },
+  "integracoes": [
+   "Hotmart, Kiwify e Eduzz permitem configurar Pixel da Meta e tag/conversão do Google no produto/checkout e oferecem integrações (webhooks/postback) — confirmar na central de ajuda de cada plataforma quais eventos e se há API de Conversões nativa",
+   "usar deduplicação (event_id) quando Pixel e API de Conversões enviam o mesmo evento",
+   "Google Ads: conversão de compra com valor + conversões otimizadas (enhanced conversions) com e-mail/telefone hasheados",
+   "Pix e boleto: compra só deve contar quando aprovada; evitar contar 'boleto gerado' como Purchase",
+   "SaaS: enviar Subscribe e cancelamentos do sistema de cobrança para CRM/BI; importar conversões offline no Google quando o pagamento ocorre fora do site",
+   "UTMs padronizadas em todos os anúncios (utm_source, utm_medium, utm_campaign, utm_content) e leitura nos relatórios da plataforma de checkout"
+  ],
+  "janelas_e_conferencia": "Comparar vendas reportadas por Meta/Google com as vendas reais da plataforma semanalmente; divergência grande indica problema de rastreamento ou atribuição."
+ },
+ "formulas_de_decisao": [
+  {
+   "nome": "Receita líquida por venda (infoproduto)",
+   "formula": "RL = preço × (1 − taxa% da plataforma − imposto% − comissão% afiliado/coprodução) − taxa fixa por venda − (preço × taxa% de reembolso)",
+   "observacao": "Taxas da plataforma e impostos variam por plano e regime tributário: usar os valores vigentes do vendedor."
+  },
+  {
+   "nome": "ROAS de equilíbrio (infoproduto)",
+   "formula": "ROAS_eq = preço ÷ RL  (equivalente a 1 ÷ margem líquida após taxas, impostos, comissões e reembolso)",
+   "observacao": "Exemplo hipotético: preço R$ 47; taxas+impostos+reembolso somando 25% → RL ≈ R$ 35,25 → ROAS_eq ≈ 1,33. Abaixo disso o front-end dá prejuízo."
+  },
+  {
+   "nome": "CPA máximo (infoproduto)",
+   "formula": "CPA_max = RL do pedido médio (produto + bumps × aceitação + upsell × aceitação) − custo de entrega/suporte − lucro mínimo desejado",
+   "observacao": "Usar a taxa real de aceitação de bumps/upsells; se o back-end em 30 dias for confiável, pode entrar no cálculo como decisão consciente."
+  },
+  {
+   "nome": "AOV com bumps",
+   "formula": "AOV = preço + Σ(preço do bump × taxa de aceitação) + Σ(preço do upsell × taxa de aceitação)",
+   "observacao": "Aumentar AOV eleva o CPA aceitável sem mexer na mídia."
+  },
+  {
+   "nome": "LTV SaaS",
+   "formula": "LTV = ticket mensal × margem bruta% ÷ churn mensal%",
+   "observacao": "Com pouco histórico, limitar o horizonte (ex.: 12 meses) para não superestimar."
+  },
+  {
+   "nome": "CAC máximo SaaS",
+   "formula": "CAC_max = LTV × margem ÷ alvo  (alvo = razão LTV:CAC desejada, ex.: 3); se LTV já for de margem, CAC_max = LTV ÷ alvo",
+   "observacao": "A razão 3:1 é uma referência de mercado, não regra: ajustar ao caixa e ao payback aceitável."
+  },
+  {
+   "nome": "CAC payback",
+   "formula": "Payback (meses) = CAC ÷ (ticket mensal × margem bruta%)",
+   "observacao": "Para empresa pequena com caixa curto, priorizar payback curto e oferecer plano anual para antecipar receita."
+  },
+  {
+   "nome": "Custo máximo por trial",
+   "formula": "CPT_max = CAC_max × taxa trial→pago",
+   "observacao": "Ex. hipotético: CAC_max R$ 300 e trial→pago de 15% → CPT_max R$ 45."
+  },
+  {
+   "nome": "Custo máximo por inscrito (aulão)",
+   "formula": "CPI_max = (RL por venda × taxa inscrito→venda)",
+   "observacao": "Medir taxa por coorte de aulão; inclui presença e remarketing."
+  }
+ ],
+ "arvore_de_diagnostico": [
+  {
+   "sintoma": "CTR baixo e CPM normal",
+   "verificar": [
+    "gancho genérico",
+    "criativo sem dono de restaurante/cozinha reconhecível",
+    "oferta pouco clara"
+   ],
+   "acoes": [
+    "testar 3–5 ganchos novos de dor específica",
+    "mostrar a tela do produto nos 3 primeiros segundos",
+    "chamar o público no texto ('dono de restaurante')"
+   ]
+  },
+  {
+   "sintoma": "Muitos cliques, poucas vendas",
+   "verificar": [
+    "coerência anúncio→página",
+    "velocidade da página no celular",
+    "preço/prova/garantia visíveis",
+    "Purchase disparando"
+   ],
+   "acoes": [
+    "alinhar promessa do anúncio com título da página",
+    "otimizar velocidade",
+    "adicionar demonstração e depoimentos",
+    "testar Purchase no gerenciador de eventos"
+   ]
+  },
+  {
+   "sintoma": "Muitos InitiateCheckout, poucas compras",
+   "verificar": [
+    "formas de pagamento",
+    "Pix/boleto pendentes",
+    "campos excessivos",
+    "preço total surpresa"
+   ],
+   "acoes": [
+    "habilitar Pix e parcelamento",
+    "ativar recuperação de carrinho/Pix",
+    "simplificar checkout",
+    "remarketing para abandono de checkout"
+   ]
+  },
+  {
+   "sintoma": "CPA acima do máximo mas ROAS de equilíbrio próximo",
+   "verificar": [
+    "AOV e aceitação de bumps",
+    "preço",
+    "fase de aprendizado"
+   ],
+   "acoes": [
+    "melhorar ou trocar order bump",
+    "testar upsell",
+    "testar preço/oferta",
+    "aguardar saída do aprendizado antes de mudar muito"
+   ]
+  },
+  {
+   "sintoma": "Vendas no Meta divergem da plataforma",
+   "verificar": [
+    "deduplicação Pixel+CAPI",
+    "Purchase contando boleto gerado",
+    "janela de atribuição",
+    "UTMs"
+   ],
+   "acoes": [
+    "corrigir event_id",
+    "disparar Purchase só na aprovação",
+    "comparar por UTM no relatório da plataforma"
+   ]
+  },
+  {
+   "sintoma": "Muitos trials, poucos assinantes",
+   "verificar": [
+    "ativação no onboarding",
+    "qualidade do público (curiosos/estudantes)",
+    "trial sem cartão",
+    "contato humano"
+   ],
+   "acoes": [
+    "guiar até o primeiro CMV calculado",
+    "qualificar no criativo e no cadastro",
+    "testar trial com cartão ou mais curto",
+    "otimizar campanha para Subscribe ou trial ativado via CAPI"
+   ]
+  },
+  {
+   "sintoma": "Churn alto nos primeiros meses",
+   "verificar": [
+    "promessa do anúncio vs. produto real",
+    "uso nas primeiras semanas",
+    "suporte"
+   ],
+   "acoes": [
+    "ajustar copy para expectativa realista",
+    "onboarding e check-in por WhatsApp",
+    "oferecer plano anual com desconto honesto"
+   ]
+  },
+  {
+   "sintoma": "Resultado bom que caiu após alguns dias",
+   "verificar": [
+    "frequência",
+    "fadiga de criativo",
+    "mudanças recentes na campanha",
+    "sazonalidade"
+   ],
+   "acoes": [
+    "subir novos criativos",
+    "ampliar público",
+    "evitar edições bruscas",
+    "comparar com mesmo período anterior"
+   ]
+  },
+  {
+   "sintoma": "Anúncio reprovado",
+   "verificar": [
+    "promessa de renda ou resultado irreal",
+    "atributos pessoais ('você está falindo?')",
+    "antes/depois enganoso",
+    "página de destino"
+   ],
+   "acoes": [
+    "reescrever sem promessa garantida",
+    "falar do problema sem afirmar atributos do usuário",
+    "alinhar página às políticas",
+    "solicitar revisão se estiver conforme"
+   ]
+  },
+  {
+   "sintoma": "Google Pesquisa gasta sem converter",
+   "verificar": [
+    "termos de pesquisa",
+    "correspondência ampla sem conversões",
+    "negativas",
+    "página"
+   ],
+   "acoes": [
+    "negativar termos irrelevantes",
+    "usar frase/exata",
+    "separar campanha de marca",
+    "revisar landing page"
+   ]
+  }
+ ],
+ "regras_de_escala": [
+  "Escalar só com rastreamento validado e CPA/ROAS dentro da meta por pelo menos 3–7 dias (hipótese — validar com dados da própria conta).",
+  "Aumentos graduais de orçamento (ex.: 20–30% a cada 2–3 dias) para não reiniciar o aprendizado (hipótese — validar com dados da própria conta).",
+  "Escala horizontal: novos criativos e ângulos vencedores, novos públicos, YouTube/Demand Gen e PMax.",
+  "Antes de escalar SaaS, conferir trial→pago e churn da coorte, não só custo por trial.",
+  "Aumentar AOV (bumps/upsells) e LTV permite pagar mais por cliente e escalar com lucro.",
+  "Parar de escalar quando CPA marginal ultrapassar o máximo ou frequência/saturação subir sem novos criativos.",
+  "Manter 10–20% da verba em testes contínuos (hipótese — validar com dados da própria conta)."
+ ],
+ "rotina_de_otimizacao": {
+  "diaria": [
+   "conferir gasto, CPA, ROAS e vendas reais na plataforma de checkout",
+   "checar reprovações e erros de pixel/CAPI",
+   "pausar anúncios claramente acima de 2–3× o CPA máximo com gasto relevante (hipótese — validar com dados da própria conta)"
+  ],
+  "semanal": [
+   "comparar vendas Meta/Google x Hotmart/Kiwify/Eduzz/sistema",
+   "analisar criativos (hook rate, CTR, CPA) e subir novos",
+   "revisar termos de pesquisa e negativas no Google",
+   "revisar aceitação de bumps/upsells e recuperação de carrinho",
+   "SaaS: trials, ativação e conversões da semana"
+  ],
+  "mensal": [
+   "recalcular ROAS de equilíbrio, CPA máximo, LTV, CAC e payback com dados atualizados",
+   "análise de coortes (compradores → back-end; trials → pagos → churn)",
+   "testar nova oferta, preço ou formato de funil",
+   "atualizar públicos semelhantes com novos compradores",
+   "revisar políticas e mudanças das plataformas"
+  ]
+ },
+ "politicas_e_cuidados": [
+  "Meta proíbe anúncios com promessas de resultados irreais ou enganosos, incluindo esquemas de enriquecimento rápido e oportunidades de renda que exageram ganhos; evitar 'fique rico', 'fature R$ X por mês', 'lucro garantido'.",
+  "Não afirmar ou insinuar atributos pessoais do usuário (ex.: 'seu restaurante está falindo?'); falar do problema de forma geral.",
+  "Antes/depois e depoimentos devem ser reais, autorizados e com contexto; incluir que resultados variam.",
+  "Escassez e prazos devem ser verdadeiros (CDC e políticas contra práticas enganosas).",
+  "Direito de arrependimento de 7 dias para compras online (CDC, art. 49).",
+  "LGPD: coletar só dados necessários, ter política de privacidade e base legal para remarketing por e-mail/WhatsApp; não usar listas compradas.",
+  "Google Ads: páginas devem entregar o que o anúncio promete; políticas de declarações enganosas e práticas inaceitáveis de negócio.",
+  "Não usar marcas de terceiros (iFood, concorrentes) como se fossem parceiros; menção comparativa só quando verdadeira e permitida.",
+  "Conferir regras de afiliados da plataforma (Hotmart/Kiwify/Eduzz) sobre anúncios em marca do produtor."
+ ],
+ "regras_para_respostas_da_ia": [
+  "Sempre pedir ou assumir explicitamente os dados mínimos do produto antes de recomendar verba.",
+  "Mostrar o cálculo de ROAS de equilíbrio/CPA máximo ou CAC máximo/payback com premissas declaradas.",
+  "Marcar todo número sem fonte da conta como hipótese e indicar como validar.",
+  "Responder em pt-BR, com valores em BRL.",
+  "Recomendar o funil adequado ao tipo de produto (low ticket, curso, mentoria, planilha, SaaS).",
+  "Nunca sugerir copy com promessa de renda, lucro garantido ou atributos pessoais.",
+  "Quando o rastreamento estiver incompleto, priorizar corrigi-lo antes de escalar.",
+  "Seguir o formato_padrao_de_resposta quando o pedido for de planejamento ou diagnóstico."
+ ],
+ "perguntas_e_respostas": [
+  {
+   "pergunta": "Preciso de catálogo na Meta para vender curso ou sistema?",
+   "resposta": "Não. Catálogo é para produtos físicos/dinâmicos. Para produto digital, use campanha de Vendas otimizando Purchase (ou StartTrial/Subscribe) com Pixel + API de Conversões."
+  },
+  {
+   "pergunta": "Começo com low ticket ou direto com o curso/sistema?",
+   "resposta": "Com verba pequena e pouca audiência, um low ticket (ex.: planilha de CMV) com order bump costuma ser a forma mais barata de gerar compradores e dados; depois oferecer curso, mentoria ou trial do sistema para essa base. É hipótese: validar pelo ROAS de front-end e receita por comprador em 30 dias."
+  },
+  {
+   "pergunta": "Como saber se o ROAS está bom?",
+   "resposta": "Compare com o ROAS de equilíbrio calculado com taxas da plataforma, impostos, comissões e reembolsos. ROAS acima do equilíbrio = lucro no front-end."
+  },
+  {
+   "pergunta": "Trial grátis ou demonstração para o sistema de CMV?",
+   "resposta": "Trial self-service se o produto é simples e o ticket baixo; demonstração se exige implantação ou ticket alto. Pode-se testar os dois e medir CAC e trial/demo→pago por coorte."
+  },
+  {
+   "pergunta": "Qual evento otimizar no SaaS?",
+   "resposta": "Comece por StartTrial (ou CompleteRegistration) para ter volume; quando houver conversões suficientes, envie Subscribe e eventos de ativação via API de Conversões e otimize para eles."
+  },
+  {
+   "pergunta": "Lançamento ou perpétuo?",
+   "resposta": "Perpétuo dá previsibilidade e é mais simples de otimizar; lançamento concentra vendas e funciona bem com audiência e conteúdo, mas tem mais risco. Muitos produtores validam com lançamento e perpetuam a oferta vencedora."
+  },
+  {
+   "pergunta": "Posso dizer 'aumente seu lucro em 30%'?",
+   "resposta": "Evite. É promessa de resultado que pode ser reprovada e gera expectativa irreal. Prefira 'veja o CMV de cada prato' ou casos reais com contexto e aviso de que resultados variam."
+  },
+  {
+   "pergunta": "Quais palavras-chave começar no Google?",
+   "resposta": "Termos de alta intenção como 'planilha cmv', 'como calcular cmv', 'ficha técnica restaurante', 'sistema para restaurante', 'controle de estoque restaurante', em correspondência de frase/exata, com negativas de emprego e acadêmicas."
+  }
+ ],
+ "fontes": [
+  {
+   "titulo": "Meta for Developers — Advantage+ campaign experience for sales and app",
+   "url": "https://developers.facebook.com/blog/post/2025/06/03/advantage-plus-campaign-experience-for-sales-and-app/",
+   "uso": "Campanhas de vendas Advantage+ e configuração simplificada."
+  },
+  {
+   "titulo": "Meta Business Help — Sobre a API de Conversões",
+   "url": "https://www.facebook.com/business/help/2041148702652965",
+   "uso": "Envio de eventos servidor-servidor e complementaridade com o Pixel."
+  },
+  {
+   "titulo": "Meta Business Help — Especificações dos eventos padrão do Pixel",
+   "url": "https://www.facebook.com/business/help/402791146561655",
+   "uso": "Eventos Purchase, InitiateCheckout, Lead, StartTrial, Subscribe, CompleteRegistration."
+  },
+  {
+   "titulo": "Meta Transparency Center — Unrealistic outcomes (Advertising Standards)",
+   "url": "https://transparency.meta.com/policies/ad-standards/deceptive-content/unrealistic-outcomes",
+   "uso": "Proibição de promessas irreais, enriquecimento rápido e renda exagerada."
+  },
+  {
+   "titulo": "Google Ads Help — Sobre conversões otimizadas (enhanced conversions)",
+   "url": "https://support.google.com/google-ads/answer/9888656",
+   "uso": "Conversões otimizadas para web com dados hasheados."
+  },
+  {
+   "titulo": "Google Ads Help — Enhanced conversions (tópico)",
+   "url": "https://support.google.com/google-ads/topic/11337914",
+   "uso": "Documentação de conversões otimizadas e impacto."
+  },
+  {
+   "titulo": "Google Ads Help — Sobre campanhas Performance Max",
+   "url": "https://support.google.com/google-ads/answer/10724817",
+   "uso": "Quando usar PMax e requisitos de conversão/criativos."
+  },
+  {
+   "titulo": "Google Ads Help — Sobre campanhas Demand Gen",
+   "url": "https://support.google.com/google-ads/answer/13695777",
+   "uso": "YouTube, Discover e Gmail para geração de demanda."
+  },
+  {
+   "titulo": "Hotmart Blog — Tipos de lançamento digital",
+   "url": "https://hotmart.com/pt-br/blog/tipos-de-lancamento-digital",
+   "uso": "Lançamento semente, interno, pago e perpétuo."
+  },
+  {
+   "titulo": "Hotmart Blog — Como lançar um curso online",
+   "url": "https://hotmart.com/pt-br/blog/como-lancar-curso-online",
+   "uso": "Etapas de lançamento de curso."
+  },
+  {
+   "titulo": "Stone Conteúdo — Lançamento perpétuo",
+   "url": "https://conteudo.stone.com.br/lancamento-perpetuo/",
+   "uso": "Conceito de funil perpétuo."
+  },
+  {
+   "titulo": "Convesio — Order Bump vs Upsell",
+   "url": "https://convesio.com/guides/order-bump-vs-upsell-which-boosts-your-revenue-more-effectively/",
+   "uso": "Diferença entre order bump e upsell e efeito no AOV."
+  },
+  {
+   "titulo": "Tomasz Tunguz — Payback period em empresas de software",
+   "url": "https://tomtunguz.com/categories/marketing/page/5/",
+   "uso": "Conceito de CAC payback em SaaS."
+  },
+  {
+   "titulo": "Planalto — Código de Defesa do Consumidor (Lei 8.078/1990)",
+   "url": "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm",
+   "uso": "Direito de arrependimento (art. 49) e práticas enganosas."
+  },
+  {
+   "titulo": "Planalto — LGPD (Lei 13.709/2018)",
+   "url": "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm",
+   "uso": "Bases legais e consentimento para dados pessoais."
+  }
+ ]
+}

@@ -39,10 +39,13 @@ Como agir no sistema:
 - Se o pedido servir para mais de uma campanha e não estiver claro qual, pergunte antes.
 - Receita marcada como estimada (pedidos × ticket) não é prova de lucro; avise quando isso importar.
 
-Dois focos: cada loja ou negócio tem foco "comida" (restaurante vendendo pedidos) ou "servico" (venda de serviço, como a própria consultoria Delivefood e a gestão de tráfego que ela vende). buscar_campanhas traz o foco. Para foco comida use a BASE DE RESTAURANTES; para foco servico use a BASE DE SERVIÇOS, onde "pedidos" significam contatos/leads e o que importa é custo por contato qualificado, reunião e contrato.
+Três focos: cada loja ou negócio tem foco "comida" (restaurante vendendo pedidos), "servico" (venda de serviço, como a própria consultoria Delivefood e a gestão de tráfego que ela vende) ou "produto" (produtos digitais da Delivefood: infoprodutos e sistemas para restaurantes, como controle de CMV e custos fixos). buscar_campanhas traz o foco. Para foco comida use a BASE DE RESTAURANTES; para servico use a BASE DE SERVIÇOS ("pedidos" = contatos; importa custo por contato qualificado, reunião e contrato); para produto use a BASE DE PRODUTOS DIGITAIS ("pedidos" = vendas, cadastros ou testes grátis; importa custo por venda, ROAS de equilíbrio com taxas da plataforma, conversão de teste em assinatura e churn).
 
 BASE DE RESTAURANTES (versão ${BASE.metadata.versao}):
 ${JSON.stringify(BASE_PROMPT)}
+${BASES.produto ? `
+BASE DE PRODUTOS DIGITAIS (versão ${BASES.produto.metadata?.versao || "1"}):
+${JSON.stringify((({ fontes, ...r }) => r)(BASES.produto))}` : ""}
 ${BASES.servico ? `
 BASE DE SERVIÇOS (versão ${BASES.servico.metadata?.versao || "1"}):
 ${JSON.stringify(BASES.servico)}` : ""}`;

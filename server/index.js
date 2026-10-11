@@ -125,7 +125,7 @@ app.post("/api/clients", wrap(async (req, res) => {
       margem: Number(b.margem) || 0,
       metaAdAccountId: String(b.metaAdAccountId || "").trim(),
       googleCustomerId: String(b.googleCustomerId || "").trim(),
-      foco: b.foco === "servico" ? "servico" : "comida",
+      foco: ["servico", "produto"].includes(b.foco) ? b.foco : "comida",
       endereco: String(b.endereco || "").trim(),
     });
     if (!c.endereco) { delete c.lat; delete c.lng; }
@@ -160,7 +160,7 @@ app.get("/api/meta/paginas", wrap(async (_req, res) => {
   if (!process.env.META_ACCESS_TOKEN) throw new Error("Coloque o token da Meta em Configurações.");
   res.json(await paginasMeta());
 }));
-app.get("/api/especialista", wrap(async (req, res) => res.json(dicasCriacao(req.query.foco === "servico" ? "servico" : "comida"))));
+app.get("/api/especialista", wrap(async (req, res) => res.json(dicasCriacao(["servico", "produto"].includes(req.query.foco) ? req.query.foco : "comida"))));
 
 // Excluir tira a loja só do TrafgFood. As contas e campanhas nas plataformas continuam como estão.
 app.delete("/api/clients/:id", wrap(async (req, res) => {
